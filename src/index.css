@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --font-heading: "Newsreader", Georgia, serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  --color-bg: #FAF7F2;
+  --color-surface: #FFFDF9;
+  --color-border: #E7E0D6;
+  --color-text-primary: #292524;
+  --color-text-secondary: #78716C;
+  --color-primary: #D97706;
+  --color-primary-hover: #C2410C;
+  --color-primary-light: #FEF3C7;
+  --color-code-bg: #F5F1EB;
+  --color-success: #16A34A;
+  --color-error: #DC2626;
+
+  --color-dark-bg: #1C1917;
+  --color-dark-surface: #292524;
+  --color-dark-border: #44403C;
+  --color-dark-text-primary: #FAFAF9;
+  --color-dark-text-secondary: #A8A29E;
+  --color-dark-primary: #F59E0B;
+  --color-dark-primary-hover: #FBBF24;
+  --color-dark-primary-light: #78350F;
+  --color-dark-code-bg: #292524;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
