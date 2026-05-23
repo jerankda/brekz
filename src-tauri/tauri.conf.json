@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "tmpbrekz-scaffold",
+  "productName": "Brekz",
   "version": "0.1.0",
-  "identifier": "com.daniel.tmpbrekz-scaffold",
+  "identifier": "com.brekz.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,13 +12,16 @@
   "app": {
     "windows": [
       {
-        "title": "tmpbrekz-scaffold",
-        "width": 800,
-        "height": 600
+        "title": "Brekz",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600,
+        "center": true
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com"
     }
   },
   "bundle": {
