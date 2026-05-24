@@ -1,6 +1,9 @@
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Settings } from "lucide-react";
+import { useUIStore } from "../../stores/uiStore";
 
 function Sidebar() {
+  const openSettings = useUIStore((s) => s.openSettings);
+
   return (
     <aside className="w-[280px] h-full flex flex-col bg-surface border-r border-border flex-shrink-0">
       <div className="p-4 border-b border-border">
@@ -26,6 +29,16 @@ function Sidebar() {
           No conversations yet
         </p>
       </nav>
+
+      <div className="border-t border-border p-3">
+        <button
+          onClick={() => openSettings()}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg transition-colors text-sm cursor-pointer"
+        >
+          <Settings size={16} />
+          Settings
+        </button>
+      </div>
     </aside>
   );
 }

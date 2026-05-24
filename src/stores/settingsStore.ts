@@ -24,7 +24,7 @@ async function getStore(): Promise<Store> {
   return storeInstance;
 }
 
-export const useSettingsStore = create<SettingsState>((set, get) => ({
+export const useSettingsStore = create<SettingsState>((set) => ({
   apiKey: null,
   apiKeyValid: false,
   defaultModel: "",

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import Sidebar from "./components/Sidebar/Sidebar";
 import ChatView from "./components/Chat/ChatView";
+import SettingsModal from "./components/Settings/SettingsModal";
 import { useSettingsStore } from "./stores/settingsStore";
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
       <main className="flex-1 flex flex-col min-w-0">
         <ChatView />
       </main>
+      <SettingsModal />
     </div>
   );
 }

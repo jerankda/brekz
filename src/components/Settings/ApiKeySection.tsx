@@ -1,0 +1,87 @@
+import { useState } from "react";
+import { Eye, EyeOff, CheckCircle, XCircle, KeyRound } from "lucide-react";
+import { useSettingsStore } from "../../stores/settingsStore";
+
+function ApiKeySection() {
+  const { apiKey, apiKeyValid, setApiKey, setApiKeyValid } = useSettingsStore();
+  const [showKey, setShowKey] = useState(false);
+  const [inputValue, setInputValue] = useState(apiKey ?? "");
+
+  const handleSave = async () => {
+    await setApiKey(inputValue.trim() || null);
+  };
+
+  const handleClear = async () => {
+    setInputValue("");
+    await setApiKey(null);
+    setApiKeyValid(false);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <KeyRound size={16} className="text-text-secondary" />
+        <label className="text-sm font-medium text-text-primary">API Key</label>
+        {apiKey && (
+          apiKeyValid ? (
+            <span className="flex items-center gap-1 text-xs text-success"><CheckCircle size={12} /> Valid</span>
+          ) : (
+            <span className="flex items-center gap-1 text-xs text-error"><XCircle size={12} /> Not validated</span>
+          )
+        )}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <input
+            type={showKey ? "text" : "password"}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="sk-or-v1-..."
+            className="w-full px-3 py-2 pr-10 rounded-lg border border-border bg-bg text-text-primary text-sm outline-none focus:border-primary transition-colors"
+          />
+          <button
+            type="button"
+            onClick={() => setShowKey(!showKey)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary cursor-pointer"
+          >
+            {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          onClick={handleSave}
+          disabled={!inputValue.trim()}
+          className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+        >
+          Save Key
+        </button>
+        {apiKey && (
+          <button
+            onClick={handleClear}
+            className="px-4 py-2 rounded-lg border border-border text-text-secondary text-sm hover:text-text-primary transition-colors cursor-pointer"
+          >
+            Remove
+          </button>
+        )}
+      </div>
+
+      <p className="text-xs text-text-secondary leading-relaxed">
+        Your API key is stored securely in your system keychain. It is never written to disk in plain text.
+        Get your key from{" "}
+        <a
+          href="https://openrouter.ai/keys"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary hover:text-primary-hover underline"
+        >
+          openrouter.ai/keys
+        </a>
+      </p>
+    </div>
+  );
+}
+
+export default ApiKeySection;
