@@ -1,13 +1,21 @@
+import { useState } from "react";
+import { Check, ChevronDown, Sparkles } from "lucide-react";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
+import { Button } from "@/components/ui/button";
 import { useModelStore } from "../../stores/modelStore";
+import { cn } from "@/lib/utils";
 
 const CURATED_PROVIDERS = new Set([
   "anthropic",
@@ -17,6 +25,14 @@ const CURATED_PROVIDERS = new Set([
   "google",
 ]);
 
+const PROVIDER_LABELS: Record<string, string> = {
+  anthropic: "Anthropic",
+  openai: "OpenAI",
+  deepseek: "DeepSeek",
+  "meta-llama": "Meta",
+  google: "Google",
+};
+
 interface ModelSelectorProps {
   value: string
   onChange: (model: string) => void
@@ -25,37 +41,24 @@ interface ModelSelectorProps {
 
 function ModelSelector({ value, onChange, disabled = false }: ModelSelectorProps) {
   const { models, loading } = useModelStore();
+  const [open, setOpen] = useState(false);
 
-  const options = models.map((m) => {
-    const parts = m.id.split("/");
-    const provider = parts.length > 1 ? parts[0] : "Other";
-    const free = m.prompt_pricing === 0 && m.completion_pricing === 0 ? " · Free" : "";
-    const cost = m.prompt_pricing > 0 || m.completion_pricing > 0
-      ? `$${m.prompt_pricing.toFixed(2)}/$ ${m.completion_pricing.toFixed(2)} per 1M`
-      : "";
-    const isCurated = CURATED_PROVIDERS.has(provider);
+  const selectedModel = models.find((m) => m.id === value);
+  const selectLabel = selectedModel ? selectedModel.name : (loading ? "Loading models..." : "Select a model");
 
-    return {
-      id: m.id,
-      name: m.name,
-      group: isCurated ? (provider.charAt(0).toUpperCase() + provider.slice(1)) : undefined,
-      description: free || cost || undefined,
-      isCurated,
-    };
-  });
+  const curatedModels = models
+    .filter((m) => {
+      const provider = m.id.split("/")[0];
+      return CURATED_PROVIDERS.has(provider);
+    })
+    .sort((a, b) => {
+      const pa = a.id.split("/")[0];
+      const pb = b.id.split("/")[0];
+      if (pa !== pb) return Array.from(CURATED_PROVIDERS).indexOf(pa) - Array.from(CURATED_PROVIDERS).indexOf(pb);
+      return 0;
+    });
 
-  const grouped = new Map<string, typeof options>();
-  const curated = options.filter((o) => o.isCurated);
-  const uncurated = options.filter((o) => !o.isCurated);
-
-  curated.forEach((o) => {
-    const g = o.group ?? "Other";
-    if (!grouped.has(g)) grouped.set(g, []);
-    grouped.get(g)!.push(o);
-  });
-  if (uncurated.length > 0) {
-    grouped.set("Other", uncurated);
-  }
+  const allModels = models;
 
   if (models.length === 0 && !loading) {
     return (
@@ -66,28 +69,93 @@ function ModelSelector({ value, onChange, disabled = false }: ModelSelectorProps
   }
 
   return (
-    <Select value={value} onValueChange={onChange} disabled={disabled || loading}>
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder={loading ? "Loading models..." : "Select a model"} />
-      </SelectTrigger>
-      <SelectContent className="max-h-[320px]">
-        {Array.from(grouped.entries()).map(([group, opts]) => (
-          <SelectGroup key={group}>
-            <SelectLabel>{group}</SelectLabel>
-            {opts.map((o) => (
-              <SelectItem key={o.id} value={o.id}>
-                <div className="flex flex-col min-w-0">
-                  <span className="truncate">{o.name}</span>
-                  {o.description && (
-                    <span className="text-muted-foreground text-[11px] truncate">{o.description}</span>
-                  )}
-                </div>
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        ))}
-      </SelectContent>
-    </Select>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild disabled={disabled || loading}>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between text-[13px] font-normal"
+        >
+          <span className="truncate">{selectLabel}</span>
+          <ChevronDown size={13} className="text-muted-foreground flex-shrink-0 ml-2" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[280px] p-0" align="start" sideOffset={4}>
+        <Command>
+          <CommandInput placeholder="Search any model..." />
+          <CommandList>
+            <CommandEmpty>No models found</CommandEmpty>
+
+            {curatedModels.length > 0 && (
+              <CommandGroup heading="Featured">
+                {curatedModels.map((m) => {
+                  const provider = m.id.split("/")[0];
+                  const isFree = m.prompt_pricing === 0 && m.completion_pricing === 0;
+                  return (
+                    <CommandItem
+                      key={m.id}
+                      value={m.id}
+                      onSelect={(currentValue) => {
+                        onChange(currentValue);
+                        setOpen(false);
+                      }}
+                    >
+                      <Sparkles size={13} className="text-primary/60" />
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="truncate text-[13px]">{m.name}</span>
+                        <span className="text-[11px] text-muted-foreground truncate">
+                          {PROVIDER_LABELS[provider] || provider}
+                          {isFree ? " · Free" : ""}
+                        </span>
+                      </div>
+                      <Check
+                        size={14}
+                        className={cn(
+                          "flex-shrink-0 ml-2",
+                          value === m.id ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            )}
+
+            <CommandGroup heading="All models">
+              {allModels.map((m) => {
+                const isFree = m.prompt_pricing === 0 && m.completion_pricing === 0;
+                return (
+                  <CommandItem
+                    key={m.id}
+                    value={m.id}
+                    onSelect={(currentValue) => {
+                      onChange(currentValue);
+                      setOpen(false);
+                    }}
+                  >
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="truncate text-[13px]">{m.name}</span>
+                      <span className="text-[11px] text-muted-foreground truncate">
+                        {m.id}
+                        {isFree ? " · Free" : ""}
+                      </span>
+                    </div>
+                    <Check
+                      size={14}
+                      className={cn(
+                        "flex-shrink-0 ml-2",
+                        value === m.id ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
 
