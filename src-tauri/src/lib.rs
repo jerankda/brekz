@@ -9,6 +9,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::models::fetch_models,
             commands::settings::validate_api_key,
+            commands::chat::send_message,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
