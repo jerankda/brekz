@@ -1,14 +1,31 @@
 import { useState } from "react";
-import { Eye, EyeOff, CheckCircle, XCircle, KeyRound } from "lucide-react";
+import { Eye, EyeOff, CheckCircle, XCircle, KeyRound, Loader2 } from "lucide-react";
+import { invoke } from "@tauri-apps/api/core";
 import { useSettingsStore } from "../../stores/settingsStore";
 
 function ApiKeySection() {
   const { apiKey, apiKeyValid, setApiKey, setApiKeyValid } = useSettingsStore();
   const [showKey, setShowKey] = useState(false);
   const [inputValue, setInputValue] = useState(apiKey ?? "");
+  const [validating, setValidating] = useState(false);
 
   const handleSave = async () => {
     await setApiKey(inputValue.trim() || null);
+  };
+
+  const handleValidate = async () => {
+    const key = inputValue.trim() || apiKey;
+    if (!key) return;
+
+    setValidating(true);
+    try {
+      const valid = await invoke<boolean>("validate_api_key", { apiKey: key });
+      setApiKeyValid(valid);
+    } catch {
+      setApiKeyValid(false);
+    } finally {
+      setValidating(false);
+    }
   };
 
   const handleClear = async () => {
@@ -57,6 +74,14 @@ function ApiKeySection() {
           className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
           Save Key
+        </button>
+        <button
+          onClick={handleValidate}
+          disabled={(!inputValue.trim() && !apiKey) || validating}
+          className="px-4 py-2 rounded-lg border border-border text-text-secondary text-sm hover:text-text-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer flex items-center gap-1.5"
+        >
+          {validating ? <Loader2 size={14} className="animate-spin" /> : null}
+          {validating ? "Validating..." : "Validate"}
         </button>
         {apiKey && (
           <button
