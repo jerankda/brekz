@@ -2,12 +2,21 @@ import { useState } from "react";
 import { Eye, EyeOff, CheckCircle, XCircle, KeyRound, Loader2 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { useSettingsStore } from "../../stores/settingsStore";
+import { useModelStore } from "../../stores/modelStore";
+import type { ModelEntry } from "../../types/chat";
 
 function ApiKeySection() {
   const { apiKey, apiKeyValid, setApiKey, setApiKeyValid } = useSettingsStore();
+  const fetchAndSetModels = useModelStore((s) => s.setModels);
   const [showKey, setShowKey] = useState(false);
   const [inputValue, setInputValue] = useState(apiKey ?? "");
   const [validating, setValidating] = useState(false);
+
+  const getBorderClass = () => {
+    if (!apiKey) return "border-border";
+    if (apiKeyValid) return "border-success";
+    return "border-error";
+  };
 
   const handleSave = async () => {
     await setApiKey(inputValue.trim() || null);
@@ -21,6 +30,14 @@ function ApiKeySection() {
     try {
       const valid = await invoke<boolean>("validate_api_key", { apiKey: key });
       setApiKeyValid(valid);
+      if (valid) {
+        try {
+          const models = await invoke<ModelEntry[]>("fetch_models", { apiKey: key });
+          fetchAndSetModels(models);
+        } catch {
+          // model fetch failed but key is valid
+        }
+      }
     } catch {
       setApiKeyValid(false);
     } finally {
@@ -32,6 +49,7 @@ function ApiKeySection() {
     setInputValue("");
     await setApiKey(null);
     setApiKeyValid(false);
+    useModelStore.getState().setModels([]);
   };
 
   return (
@@ -55,7 +73,7 @@ function ApiKeySection() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="sk-or-v1-..."
-            className="w-full px-3 py-2 pr-10 rounded-lg border border-border bg-bg text-text-primary text-sm outline-none focus:border-primary transition-colors"
+            className={`w-full px-3 py-2 pr-10 rounded-lg border bg-bg text-text-primary text-sm outline-none transition-colors focus:border-primary ${getBorderClass()}`}
           />
           <button
             type="button"
@@ -94,7 +112,7 @@ function ApiKeySection() {
       </div>
 
       <p className="text-xs text-text-secondary leading-relaxed">
-        Your API key is stored securely in your system keychain. It is never written to disk in plain text.
+        Your API key is stored locally on your device. It is only sent to OpenRouter to make API requests.
         Get your key from{" "}
         <a
           href="https://openrouter.ai/keys"
