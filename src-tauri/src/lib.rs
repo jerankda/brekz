@@ -6,7 +6,10 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::default().build())
-        .invoke_handler(tauri::generate_handler![commands::settings::validate_api_key])
+        .invoke_handler(tauri::generate_handler![
+            commands::models::fetch_models,
+            commands::settings::validate_api_key,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
