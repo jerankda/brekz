@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Eye, EyeOff, CheckCircle, XCircle, KeyRound, Loader2 } from "lucide-react";
+import { Eye, EyeOff, CheckCircle, XCircle, KeyRound, Loader2, AlertCircle } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { useModelStore } from "../../stores/modelStore";
@@ -11,6 +11,7 @@ function ApiKeySection() {
   const [showKey, setShowKey] = useState(false);
   const [inputValue, setInputValue] = useState(apiKey ?? "");
   const [validating, setValidating] = useState(false);
+  const [modelError, setModelError] = useState<string | null>(null);
 
   const getBorderClass = () => {
     if (!apiKey) return "border-border";
@@ -30,6 +31,7 @@ function ApiKeySection() {
       await setApiKey(inputValue.trim());
     }
 
+    setModelError(null);
     setValidating(true);
     try {
       const valid = await invoke<boolean>("validate_api_key", { apiKey: key });
@@ -42,8 +44,8 @@ function ApiKeySection() {
           if (!settingsStore.defaultModel && models.length > 0) {
             await settingsStore.setDefaultModel(models[0].id);
           }
-        } catch {
-          // model fetch failed but key is valid
+        } catch (e) {
+          setModelError(`Models loaded: ${String(e)}`);
         }
       }
     } catch {
@@ -57,6 +59,7 @@ function ApiKeySection() {
     setInputValue("");
     await setApiKey(null);
     setApiKeyValid(false);
+    setModelError(null);
     useModelStore.getState().setModels([]);
   };
 
@@ -92,6 +95,13 @@ function ApiKeySection() {
           </button>
         </div>
       </div>
+
+      {modelError && (
+        <div className="flex items-center gap-2 text-xs text-error bg-error/10 border border-error/20 rounded-lg px-3 py-2">
+          <AlertCircle size={12} />
+          {modelError}
+        </div>
+      )}
 
       <div className="flex gap-2">
         <button

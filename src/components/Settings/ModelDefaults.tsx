@@ -1,4 +1,5 @@
-import { Cpu, Thermometer, Zap, RefreshCw } from "lucide-react";
+import { Cpu, Thermometer, Zap, RefreshCw, AlertCircle } from "lucide-react";
+import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { useModelStore } from "../../stores/modelStore";
@@ -11,9 +12,11 @@ function ModelDefaults() {
   } = useSettingsStore();
 
   const { models, loading, setModels, setLoading } = useModelStore();
+  const [error, setError] = useState<string | null>(null);
 
   const handleRefresh = async () => {
     if (!apiKey) return;
+    setError(null);
     setLoading(true);
     try {
       const data = await invoke<Array<{ id: string; name: string; context_length: number; prompt_pricing: number; completion_pricing: number }>>("fetch_models", { apiKey });
@@ -21,8 +24,8 @@ function ModelDefaults() {
       if (!defaultModel && data.length > 0) {
         await setDefaultModel(data[0].id);
       }
-    } catch {
-      // failed
+    } catch (e) {
+      setError(String(e));
     }
     setLoading(false);
   };
@@ -43,6 +46,12 @@ function ModelDefaults() {
         <p className="text-text-secondary text-sm">
           No models loaded yet.
         </p>
+        {error && (
+          <div className="flex items-center gap-2 text-xs text-error bg-error/10 border border-error/20 rounded-lg px-3 py-2">
+            <AlertCircle size={12} />
+            {error}
+          </div>
+        )}
         <button
           onClick={handleRefresh}
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors cursor-pointer"
@@ -69,6 +78,13 @@ function ModelDefaults() {
           Refresh
         </button>
       </div>
+
+      {error && (
+        <div className="flex items-center gap-2 text-xs text-error bg-error/10 border border-error/20 rounded-lg px-3 py-2">
+          <AlertCircle size={12} />
+          {error}
+        </div>
+      )}
 
       <div className="space-y-2">
         <label className="flex items-center gap-2 text-sm font-medium text-text-primary">

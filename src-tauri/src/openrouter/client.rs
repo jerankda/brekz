@@ -41,16 +41,25 @@ fn build_client(api_key: &str, read_timeout_secs: u64) -> reqwest::Client {
 }
 
 pub async fn validate_api_key(api_key: &str) -> Result<bool, String> {
-    let client = build_client(api_key, 30);
-    let url = format!("{}/models", BASE_URL);
+    let client = build_client(api_key, 15);
+    let url = format!("{}/chat/completions", BASE_URL);
+
+    let body = serde_json::json!({
+        "model": "openai/gpt-4o-mini",
+        "messages": [{"role": "user", "content": "hi"}],
+        "max_tokens": 1,
+        "stream": false
+    });
 
     let response = client
-        .get(&url)
+        .post(&url)
+        .json(&body)
         .send()
         .await
         .map_err(|e| format!("Network error: {}", e))?;
 
-    Ok(response.status().is_success())
+    let status = response.status();
+    Ok(status.is_success())
 }
 
 pub async fn fetch_models(api_key: &str) -> Result<Vec<ModelEntry>, String> {
