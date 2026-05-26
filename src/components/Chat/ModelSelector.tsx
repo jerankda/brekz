@@ -1,6 +1,14 @@
 import Select from "../UI/Select";
 import { useModelStore } from "../../stores/modelStore";
 
+const CURATED_PROVIDERS = new Set([
+  "anthropic",
+  "openai",
+  "deepseek",
+  "meta-llama",
+  "google",
+]);
+
 interface ModelSelectorProps {
   value: string
   onChange: (model: string) => void
@@ -10,13 +18,6 @@ interface ModelSelectorProps {
 function ModelSelector({ value, onChange, disabled = false }: ModelSelectorProps) {
   const { models, loading } = useModelStore();
 
-  const grouped = new Map<string, string>();
-  models.forEach((m) => {
-    const parts = m.id.split("/");
-    const provider = parts.length > 1 ? parts[0] : "Other";
-    grouped.set(m.id, provider);
-  });
-
   const options = models.map((m) => {
     const parts = m.id.split("/");
     const provider = parts.length > 1 ? parts[0] : "Other";
@@ -24,12 +25,14 @@ function ModelSelector({ value, onChange, disabled = false }: ModelSelectorProps
     const cost = m.prompt_pricing > 0 || m.completion_pricing > 0
       ? `$${m.prompt_pricing.toFixed(2)}/$ ${m.completion_pricing.toFixed(2)} per 1M`
       : "";
+    const isCurated = CURATED_PROVIDERS.has(provider);
 
     return {
       value: m.id,
       label: m.name,
-      group: provider.charAt(0).toUpperCase() + provider.slice(1),
+      group: isCurated ? (provider.charAt(0).toUpperCase() + provider.slice(1)) : undefined,
       description: free || cost || undefined,
+      featured: isCurated,
     };
   });
 

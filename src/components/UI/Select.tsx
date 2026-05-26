@@ -6,6 +6,7 @@ interface SelectOption {
   label: string
   group?: string
   description?: string
+  featured?: boolean
 }
 
 interface SelectProps {
@@ -26,7 +27,7 @@ function Select({ options, value, onChange, placeholder = "Select...", disabled 
 
   const filtered = search
     ? options.filter((o) => o.label.toLowerCase().includes(search.toLowerCase()) || o.value.toLowerCase().includes(search.toLowerCase()))
-    : options;
+    : options.filter((o) => o.featured !== false);
 
   const grouped = new Map<string, SelectOption[]>();
   filtered.forEach((o) => {
@@ -80,14 +81,21 @@ function Select({ options, value, onChange, placeholder = "Select...", disabled 
                 <OptionItem key={o.value} option={o} selected={o.value === value} onSelect={() => { onChange(o.value); setOpen(false); setSearch(""); }} />
               ))
             ) : (
-              Array.from(grouped.entries()).map(([group, opts]) => (
-                <div key={group}>
-                  {group && <p className="text-text-secondary text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5">{group}</p>}
-                  {opts.map((o) => (
-                    <OptionItem key={o.value} option={o} selected={o.value === value} onSelect={() => { onChange(o.value); setOpen(false); setSearch(""); }} />
-                  ))}
-                </div>
-              ))
+              <>
+                {Array.from(grouped.entries()).map(([group, opts]) => (
+                  <div key={group}>
+                    {group && <p className="text-text-secondary text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5">{group}</p>}
+                    {opts.map((o) => (
+                      <OptionItem key={o.value} option={o} selected={o.value === value} onSelect={() => { onChange(o.value); setOpen(false); setSearch(""); }} />
+                    ))}
+                  </div>
+                ))}
+                {!search && (
+                  <p className="text-text-secondary text-xs px-3 py-3 text-center border-t border-border mt-1">
+                    Search above to find any model
+                  </p>
+                )}
+              </>
             )}
           </div>
         </div>
