@@ -13,7 +13,7 @@ function ChatView() {
   const isStreaming = useChatStore((s) => s.isStreaming);
   const error = useChatStore((s) => s.error);
   const apiKey = useSettingsStore((s) => s.apiKey);
-  const defaultModel = useSettingsStore((s) => s.defaultModel);
+  const apiKeyValid = useSettingsStore((s) => s.apiKeyValid);
 
   const { createConversation } = useConversations();
   const { sendMessage } = useStreamingChat();
@@ -48,7 +48,7 @@ function ChatView() {
     );
   }
 
-  if (!defaultModel) {
+  if (!apiKeyValid) {
     return (
       <div className="flex-1 flex items-center justify-center px-6">
         <div className="text-center max-w-md">
@@ -56,10 +56,10 @@ function ChatView() {
             <MessageSquare size={28} className="text-primary" />
           </div>
           <h1 className="font-heading text-2xl font-bold text-text-primary mb-3">
-            Select a model
+            Validate your API key
           </h1>
           <p className="text-text-secondary text-sm leading-relaxed">
-            Choose a model in Settings to start talking.
+            Go to Settings and click "Validate" to verify your key.
           </p>
         </div>
       </div>
@@ -78,7 +78,7 @@ function ChatView() {
               Start a conversation
             </h1>
             <p className="text-text-secondary text-sm leading-relaxed">
-              Type your message and press{" "}
+              Select a model, type your message, and press{" "}
               <kbd className="font-mono text-xs px-1.5 py-0.5 rounded bg-code-bg border border-border">
                 ⌘Enter
               </kbd>{" "}

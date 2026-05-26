@@ -26,6 +26,10 @@ function ApiKeySection() {
     const key = inputValue.trim() || apiKey;
     if (!key) return;
 
+    if (inputValue.trim() && inputValue.trim() !== apiKey) {
+      await setApiKey(inputValue.trim());
+    }
+
     setValidating(true);
     try {
       const valid = await invoke<boolean>("validate_api_key", { apiKey: key });
@@ -34,6 +38,10 @@ function ApiKeySection() {
         try {
           const models = await invoke<ModelEntry[]>("fetch_models", { apiKey: key });
           fetchAndSetModels(models);
+          const settingsStore = useSettingsStore.getState();
+          if (!settingsStore.defaultModel && models.length > 0) {
+            await settingsStore.setDefaultModel(models[0].id);
+          }
         } catch {
           // model fetch failed but key is valid
         }

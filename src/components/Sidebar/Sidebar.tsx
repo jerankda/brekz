@@ -3,13 +3,11 @@ import { useState, useEffect, useCallback } from "react";
 import { useUIStore } from "../../stores/uiStore";
 import { useChatStore } from "../../stores/chatStore";
 import { useConversations } from "../../hooks/useConversations";
-import { useSettingsStore } from "../../stores/settingsStore";
 import type { Conversation } from "../../types/chat";
 
 function Sidebar() {
   const openSettings = useUIStore((s) => s.openSettings);
   const currentConversationId = useChatStore((s) => s.currentConversationId);
-  const defaultModel = useSettingsStore((s) => s.defaultModel);
   const { createConversation, loadConversation, loadConversations, deleteConversation } = useConversations();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [search, setSearch] = useState("");
@@ -24,10 +22,9 @@ function Sidebar() {
   }, [refreshList, currentConversationId]);
 
   const handleNewChat = useCallback(async () => {
-    if (!defaultModel) return;
-    await createConversation(defaultModel);
+    await createConversation("");
     await refreshList();
-  }, [defaultModel, createConversation, refreshList]);
+  }, [createConversation, refreshList]);
 
   const handleSelect = useCallback(async (id: string) => {
     if (id === currentConversationId) return;
@@ -58,8 +55,7 @@ function Sidebar() {
       <div className="p-4 border-b border-border">
         <button
           onClick={handleNewChat}
-          disabled={!defaultModel}
-          className="w-full flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-medium text-sm hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          className="w-full flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-medium text-sm hover:bg-primary-hover transition-colors cursor-pointer"
         >
           <Plus size={16} />
           New Chat
