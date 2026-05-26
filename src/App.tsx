@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import Sidebar from "./components/Sidebar/Sidebar";
 import ChatView from "./components/Chat/ChatView";
 import SettingsModal from "./components/Settings/SettingsModal";
@@ -6,7 +7,8 @@ import { useSettingsStore } from "./stores/settingsStore";
 import { useModelStore } from "./stores/modelStore";
 
 function App() {
-  const { load, apiKey } = useSettingsStore((s) => ({ load: s.load, apiKey: s.apiKey }));
+  const load = useSettingsStore((s) => s.load);
+  const apiKey = useSettingsStore((s) => s.apiKey);
   const fetchAndSetModels = useModelStore((s) => s.setModels);
 
   useEffect(() => {
@@ -16,11 +18,9 @@ function App() {
   useEffect(() => {
     if (!apiKey) return;
 
-    import("@tauri-apps/api/core").then(({ invoke }) => {
-      invoke("fetch_models", { apiKey })
-        .then((models) => fetchAndSetModels(models as Array<{ id: string; name: string; context_length: number; prompt_pricing: number; completion_pricing: number }>))
-        .catch(() => {});
-    });
+    invoke("fetch_models", { apiKey })
+      .then((models) => fetchAndSetModels(models as Array<{ id: string; name: string; context_length: number; prompt_pricing: number; completion_pricing: number }>))
+      .catch(() => {});
   }, [apiKey, fetchAndSetModels]);
 
   return (
