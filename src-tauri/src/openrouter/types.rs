@@ -77,7 +77,7 @@ pub struct ChatResponse {
 #[derive(Debug, Deserialize)]
 pub struct Choice {
     pub delta: Option<Delta>,
-    pub message: Option<Message>,
+    pub message: Option<ResponseMessage>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -86,7 +86,7 @@ pub struct Delta {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct Message {
+pub struct ResponseMessage {
     pub content: String,
 }
 
@@ -95,6 +95,31 @@ pub struct Usage {
     pub prompt_tokens: u32,
     pub completion_tokens: u32,
     pub total_tokens: u32,
+}
+
+// ── Database types ──
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Conversation {
+    pub id: String,
+    pub title: String,
+    pub model: String,
+    pub system_prompt: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Message {
+    pub id: String,
+    pub conversation_id: String,
+    pub role: String,
+    pub content: String,
+    pub model: String,
+    pub input_tokens: u32,
+    pub output_tokens: u32,
+    pub cost: f64,
+    pub created_at: String,
 }
 
 // ── Frontend-facing streaming event payloads ──

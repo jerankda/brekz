@@ -25,3 +25,4 @@ eventsource-stream = "0.2"
 futures-util = "0.3"
 uuid = { version = "1", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
+rusqlite = { version = "0.32", features = ["bundled", "serde_json"] }
