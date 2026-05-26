@@ -1,6 +1,10 @@
 import { MessageSquare } from "lucide-react";
+import { useSettingsStore } from "../../stores/settingsStore";
+import ModelSelector from "./ModelSelector";
 
 function ChatView() {
+  const { defaultModel, setDefaultModel } = useSettingsStore();
+
   return (
     <div className="flex-1 flex flex-col h-full">
       <div className="flex-1 flex items-center justify-center px-6">
@@ -22,7 +26,10 @@ function ChatView() {
       </div>
 
       <div className="border-t border-border p-4">
-        <div className="max-w-[768px] mx-auto w-full">
+        <div className="max-w-[768px] mx-auto w-full space-y-3">
+          <div className="w-full max-w-[280px]">
+            <ModelSelector value={defaultModel} onChange={setDefaultModel} />
+          </div>
           <div className="flex items-end gap-2 bg-surface border border-border rounded-xl px-4 py-3">
             <textarea
               placeholder="Send a message..."

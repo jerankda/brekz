@@ -1,6 +1,7 @@
 import { useUIStore } from "../../stores/uiStore";
 import Dialog from "../UI/Dialog";
 import ApiKeySection from "./ApiKeySection";
+import ModelDefaults from "./ModelDefaults";
 
 const tabs = [
   { id: "general", label: "General" },
@@ -33,9 +34,7 @@ function SettingsModal() {
       {settingsTab === "appearance" && (
         <p className="text-text-secondary text-sm">Appearance settings coming soon.</p>
       )}
-      {settingsTab === "models" && (
-        <p className="text-text-secondary text-sm">Model selection coming soon.</p>
-      )}
+      {settingsTab === "models" && <ModelDefaults />}
     </Dialog>
   );
 }
