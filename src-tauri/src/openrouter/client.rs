@@ -6,7 +6,7 @@ use reqwest::header;
 use tauri::{Emitter, Runtime};
 
 use crate::openrouter::types::{
-    ChatMessage, ChatRequest, ChatResponse, ModelEntry, ModelsResponse, StreamChunkPayload,
+    ChatMessage, ChatRequest, ChatResponse, ModelEntry, StreamChunkPayload,
     StreamDonePayload, Usage,
 };
 
@@ -76,12 +76,60 @@ pub async fn fetch_models(api_key: &str) -> Result<Vec<ModelEntry>, String> {
         return Err(format!("API error: {}", response.status()));
     }
 
-    let body: ModelsResponse = response
+    let body: serde_json::Value = response
         .json()
         .await
         .map_err(|e| format!("Parse error: {}", e))?;
 
-    Ok(body.data.into_iter().map(ModelEntry::from).collect())
+    let data = body
+        .get("data")
+        .and_then(|d| d.as_array())
+        .ok_or_else(|| "Invalid response: missing data array".to_string())?;
+
+    let mut models = Vec::new();
+    for item in data {
+        let id = item
+            .get("id")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_string();
+        let name = item
+            .get("name")
+            .and_then(|v| v.as_str())
+            .unwrap_or(&id)
+            .to_string();
+        let context_length = item
+            .get("context_length")
+            .and_then(|v| v.as_u64())
+            .unwrap_or(0) as u32;
+
+        let prompt_pricing = item
+            .pointer("/pricing/prompt")
+            .and_then(|v| {
+                v.as_str()
+                    .and_then(|s| s.parse::<f64>().ok())
+                    .or_else(|| v.as_f64())
+            })
+            .unwrap_or(0.0);
+        let completion_pricing = item
+            .pointer("/pricing/completion")
+            .and_then(|v| {
+                v.as_str()
+                    .and_then(|s| s.parse::<f64>().ok())
+                    .or_else(|| v.as_f64())
+            })
+            .unwrap_or(0.0);
+
+        models.push(ModelEntry {
+            id,
+            name,
+            context_length,
+            prompt_pricing,
+            completion_pricing,
+        });
+    }
+
+    Ok(models)
 }
 
 pub async fn stream_chat<R: Runtime>(
