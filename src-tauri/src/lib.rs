@@ -35,6 +35,7 @@ pub fn run() {
             commands::models::fetch_models,
             commands::settings::validate_api_key,
             commands::chat::send_message,
+            commands::chat::generate_conversation_title,
             commands::conversations::create_conversation,
             commands::conversations::list_conversations,
             commands::conversations::get_conversation,

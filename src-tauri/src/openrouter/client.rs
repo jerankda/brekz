@@ -132,6 +132,55 @@ pub async fn fetch_models(api_key: &str) -> Result<Vec<ModelEntry>, String> {
     Ok(models)
 }
 
+pub async fn generate_title(api_key: &str, user_message: &str, assistant_message: &str) -> Result<String, String> {
+    let client = build_client(api_key, 30);
+    let url = format!("{}/chat/completions", BASE_URL);
+
+    let prompt = format!(
+        "Generate a concise, descriptive title (3-6 words, no quotes) for this conversation:\n\nUser: {}\nAssistant: {}\n\nTitle:",
+        user_message, assistant_message
+    );
+
+    let body = serde_json::json!({
+        "model": "openai/gpt-4o-mini",
+        "messages": [
+            {"role": "system", "content": "You are a title generator. Reply with ONLY the title, nothing else."},
+            {"role": "user", "content": prompt}
+        ],
+        "max_tokens": 30,
+        "temperature": 0.3,
+        "stream": false
+    });
+
+    let response = client
+        .post(&url)
+        .json(&body)
+        .send()
+        .await
+        .map_err(|e| format!("Title generation failed: {}", e))?;
+
+    if !response.status().is_success() {
+        return Err(format!("Title API error: {}", response.status()));
+    }
+
+    let json: serde_json::Value = response
+        .json()
+        .await
+        .map_err(|e| format!("Title parse error: {}", e))?;
+
+    let title = json
+        .pointer("/choices/0/message/content")
+        .and_then(|v| v.as_str())
+        .unwrap_or("New Chat")
+        .trim()
+        .trim_matches('"')
+        .trim_matches('\'')
+        .trim()
+        .to_string();
+
+    Ok(title)
+}
+
 pub async fn stream_chat<R: Runtime>(
     app: &impl Emitter<R>,
     api_key: &str,

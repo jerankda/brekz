@@ -21,8 +21,9 @@ export function useStreamingChat() {
   } = useChatStore();
 
   const { apiKey, defaultTemperature, defaultMaxTokens } = useSettingsStore();
-  const { saveMessage, setConversationTitle } = useConversations();
+  const { saveMessage } = useConversations();
   const hasSentFirstMessage = useRef(false);
+  const firstUserMessage = useRef("");
 
   useEffect(() => {
     const unlistenChunk = listen<StreamChunkPayload>("stream-chunk", (event) => {
@@ -48,6 +49,15 @@ export function useStreamingChat() {
         addMessage(assistantMsg);
       }
       stopStreaming();
+
+      if (firstUserMessage.current && apiKey) {
+        invoke("generate_conversation_title", {
+          apiKey,
+          conversationId: conversation_id,
+          userMessage: firstUserMessage.current,
+          assistantMessage: content,
+        }).catch(() => {});
+      }
     });
 
     const unlistenError = listen<StreamErrorPayload>("stream-error", (event) => {
@@ -59,7 +69,7 @@ export function useStreamingChat() {
       unlistenDone.then((f) => f());
       unlistenError.then((f) => f());
     };
-  }, [saveMessage, addMessage, appendChunk, stopStreaming, setChatError]);
+  }, [saveMessage, addMessage, appendChunk, stopStreaming, setChatError, apiKey]);
 
   const sendMessage = useCallback(
     async (content: string, model: string) => {
@@ -85,12 +95,7 @@ export function useStreamingChat() {
 
       if (!hasSentFirstMessage.current) {
         hasSentFirstMessage.current = true;
-        const title = content.length > 50 ? content.slice(0, 50) + "…" : content;
-        try {
-          await setConversationTitle(currentConversationId, title);
-        } catch {
-          // non-critical
-        }
+        firstUserMessage.current = content;
       }
 
       const assistantId = uuid();
@@ -117,7 +122,7 @@ export function useStreamingChat() {
         setChatError(String(e));
       }
     },
-    [apiKey, currentConversationId, isStreaming, messages, defaultTemperature, defaultMaxTokens, saveMessage, addMessage, startStreaming, setChatError, setConversationTitle],
+    [apiKey, currentConversationId, isStreaming, messages, defaultTemperature, defaultMaxTokens, saveMessage, addMessage, startStreaming, setChatError],
   );
 
   return { sendMessage, isStreaming, streamingContent };
