@@ -18,6 +18,7 @@ export function useStreamingChat() {
     stopStreaming,
     addMessage,
     setError: setChatError,
+    bumpTitleRefresh,
   } = useChatStore();
 
   const { apiKey, defaultTemperature, defaultMaxTokens } = useSettingsStore();
@@ -56,7 +57,9 @@ export function useStreamingChat() {
           conversationId: conversation_id,
           userMessage: firstUserMessage.current,
           assistantMessage: content,
-        }).catch(() => {});
+        })
+          .then(() => bumpTitleRefresh())
+          .catch(() => {});
       }
     });
 
@@ -69,7 +72,7 @@ export function useStreamingChat() {
       unlistenDone.then((f) => f());
       unlistenError.then((f) => f());
     };
-  }, [saveMessage, addMessage, appendChunk, stopStreaming, setChatError, apiKey]);
+  }, [saveMessage, addMessage, appendChunk, stopStreaming, setChatError, apiKey, bumpTitleRefresh]);
 
   const sendMessage = useCallback(
     async (content: string, model: string) => {

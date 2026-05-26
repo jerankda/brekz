@@ -8,6 +8,7 @@ interface ChatState {
   streamingContent: string
   streamingMessageId: string | null
   error: string | null
+  titleRefreshVersion: number
 
   setCurrentConversation: (id: string | null) => void
   setMessages: (messages: Message[]) => void
@@ -17,6 +18,7 @@ interface ChatState {
   appendChunk: (chunk: string) => void
   stopStreaming: () => void
   setError: (error: string | null) => void
+  bumpTitleRefresh: () => void
 }
 
 export const useChatStore = create<ChatState>((set) => ({
@@ -26,6 +28,7 @@ export const useChatStore = create<ChatState>((set) => ({
   streamingContent: "",
   streamingMessageId: null,
   error: null,
+  titleRefreshVersion: 0,
 
   setCurrentConversation: (id) => set({ currentConversationId: id }),
 
@@ -57,4 +60,8 @@ export const useChatStore = create<ChatState>((set) => ({
     }),
 
   setError: (error) => set({ error, isStreaming: false }),
+
+  bumpTitleRefresh: () =>
+    set((s) => ({ titleRefreshVersion: s.titleRefreshVersion + 1 }),
+  ),
 }));

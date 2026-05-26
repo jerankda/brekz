@@ -20,6 +20,7 @@ function formatTime(iso: string) {
 function Sidebar() {
   const { openSettings, toggleSidebar } = useUIStore();
   const currentConversationId = useChatStore((s) => s.currentConversationId);
+  const titleRefreshVersion = useChatStore((s) => s.titleRefreshVersion);
   const { createConversation, loadConversation, loadConversations, deleteConversation } = useConversations();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [search, setSearch] = useState("");
@@ -31,7 +32,7 @@ function Sidebar() {
 
   useEffect(() => {
     refreshList();
-  }, [refreshList, currentConversationId]);
+  }, [refreshList, currentConversationId, titleRefreshVersion]);
 
   const handleNewChat = useCallback(async () => {
     await createConversation("");
