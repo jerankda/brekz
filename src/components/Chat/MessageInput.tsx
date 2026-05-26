@@ -1,5 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { ArrowUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import ModelSelector from "./ModelSelector";
 import { useChatStore } from "../../stores/chatStore";
 import { useSettingsStore } from "../../stores/settingsStore";
@@ -18,7 +20,7 @@ function MessageInput({ onSend }: MessageInputProps) {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, 8 * 20) + "px";
+    el.style.height = Math.min(el.scrollHeight, 8 * 24) + "px";
   }, []);
 
   const handleSend = useCallback(() => {
@@ -33,7 +35,7 @@ function MessageInput({ onSend }: MessageInputProps) {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         handleSend();
       }
@@ -41,15 +43,17 @@ function MessageInput({ onSend }: MessageInputProps) {
     [handleSend],
   );
 
+  const canSend = input.trim() && !isStreaming && defaultModel;
+
   return (
-    <div className="border-t border-border p-4">
-      <div className="max-w-[768px] mx-auto w-full space-y-3">
-        <div className="w-full max-w-[280px]">
+    <div className="px-4 pb-5 pt-2">
+      <div className="max-w-[720px] mx-auto w-full">
+        <div className="w-full max-w-[260px] mb-3">
           <ModelSelector value={defaultModel} onChange={setDefaultModel} />
         </div>
 
-        <div className="flex items-end gap-2 bg-surface border border-border rounded-xl px-4 py-3 focus-within:border-primary transition-colors">
-          <textarea
+        <div className="flex items-end gap-2 bg-card border border-border/40 rounded-2xl px-4 py-3 shadow-2xl shadow-black/30 focus-within:border-primary/30 focus-within:ring-2 focus-within:ring-primary/10 transition-all duration-200">
+          <Textarea
             ref={textareaRef}
             value={input}
             onChange={(e) => {
@@ -57,19 +61,24 @@ function MessageInput({ onSend }: MessageInputProps) {
               adjustHeight();
             }}
             onKeyDown={handleKeyDown}
-            placeholder="Send a message..."
+            placeholder="Ask anything..."
             rows={1}
             disabled={isStreaming}
-            className="flex-1 bg-transparent border-none outline-none resize-none text-text-primary text-sm font-body leading-relaxed placeholder:text-text-secondary disabled:opacity-50"
+            className="flex-1 border-0 bg-transparent px-0 py-0 min-h-0 resize-none text-[15px] leading-relaxed placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
           />
-          <button
+          <Button
             onClick={handleSend}
-            disabled={!input.trim() || isStreaming || !defaultModel}
-            className="w-9 h-9 rounded-lg bg-primary text-white flex items-center justify-center hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer flex-shrink-0"
+            disabled={!canSend}
+            size="icon"
+            className="rounded-xl flex-shrink-0 size-9"
           >
-            <ArrowUp size={16} />
-          </button>
+            <ArrowUp size={17} strokeWidth={2.5} />
+          </Button>
         </div>
+
+        <p className="text-[11px] text-muted-foreground/50 text-center mt-2.5">
+          Brekz can make mistakes. Verify important information.
+        </p>
       </div>
     </div>
   );

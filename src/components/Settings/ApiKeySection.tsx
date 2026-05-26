@@ -3,7 +3,10 @@ import { Eye, EyeOff, CheckCircle, XCircle, KeyRound, Loader2, AlertCircle } fro
 import { invoke } from "@tauri-apps/api/core";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { useModelStore } from "../../stores/modelStore";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import type { ModelEntry } from "../../types/chat";
+import { cn } from "@/lib/utils";
 
 function ApiKeySection() {
   const { apiKey, apiKeyValid, setApiKey, setApiKeyValid } = useSettingsStore();
@@ -13,11 +16,11 @@ function ApiKeySection() {
   const [validating, setValidating] = useState(false);
   const [modelError, setModelError] = useState<string | null>(null);
 
-  const getBorderClass = () => {
-    if (!apiKey) return "border-border";
-    if (apiKeyValid) return "border-success";
-    return "border-error";
-  };
+  const borderClass = !apiKey
+    ? "border-border"
+    : apiKeyValid
+      ? "border-emerald-500/50"
+      : "border-destructive/50";
 
   const handleSave = async () => {
     await setApiKey(inputValue.trim() || null);
@@ -45,7 +48,7 @@ function ApiKeySection() {
             await settingsStore.setDefaultModel(models[0].id);
           }
         } catch (e) {
-          setModelError(`Models loaded: ${String(e)}`);
+          setModelError(`Failed to load models: ${String(e)}`);
         }
       }
     } catch {
@@ -66,77 +69,82 @@ function ApiKeySection() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <KeyRound size={16} className="text-text-secondary" />
-        <label className="text-sm font-medium text-text-primary">API Key</label>
+        <KeyRound size={15} className="text-muted-foreground" />
+        <label className="text-sm font-medium text-foreground">API Key</label>
         {apiKey && (
           apiKeyValid ? (
-            <span className="flex items-center gap-1 text-xs text-success"><CheckCircle size={12} /> Valid</span>
+            <span className="flex items-center gap-1 text-xs text-emerald-500"><CheckCircle size={11} /> Valid</span>
           ) : (
-            <span className="flex items-center gap-1 text-xs text-error"><XCircle size={12} /> Not validated</span>
+            <span className="flex items-center gap-1 text-xs text-destructive"><XCircle size={11} /> Not validated</span>
           )
         )}
       </div>
 
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <input
+          <Input
             type={showKey ? "text" : "password"}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="sk-or-v1-..."
-            className={`w-full px-3 py-2 pr-10 rounded-lg border bg-bg text-text-primary text-sm outline-none transition-colors focus:border-primary ${getBorderClass()}`}
+            className={cn("pr-10", borderClass)}
           />
           <button
             type="button"
             onClick={() => setShowKey(!showKey)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary cursor-pointer"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors duration-200"
           >
-            {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
+            {showKey ? <EyeOff size={15} /> : <Eye size={15} />}
           </button>
         </div>
       </div>
 
       {modelError && (
-        <div className="flex items-center gap-2 text-xs text-error bg-error/10 border border-error/20 rounded-lg px-3 py-2">
-          <AlertCircle size={12} />
+        <div className="flex items-center gap-2 text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2 animate-fade-up">
+          <AlertCircle size={11} />
           {modelError}
         </div>
       )}
 
       <div className="flex gap-2">
-        <button
+        <Button
           onClick={handleSave}
           disabled={!inputValue.trim()}
-          className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          size="sm"
+          className="rounded-lg"
         >
           Save Key
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="outline"
           onClick={handleValidate}
           disabled={(!inputValue.trim() && !apiKey) || validating}
-          className="px-4 py-2 rounded-lg border border-border text-text-secondary text-sm hover:text-text-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer flex items-center gap-1.5"
+          size="sm"
+          className="rounded-lg"
         >
-          {validating ? <Loader2 size={14} className="animate-spin" /> : null}
+          {validating && <Loader2 size={13} className="animate-spin mr-1" />}
           {validating ? "Validating..." : "Validate"}
-        </button>
+        </Button>
         {apiKey && (
-          <button
+          <Button
+            variant="outline"
             onClick={handleClear}
-            className="px-4 py-2 rounded-lg border border-border text-text-secondary text-sm hover:text-text-primary transition-colors cursor-pointer"
+            size="sm"
+            className="rounded-lg"
           >
             Remove
-          </button>
+          </Button>
         )}
       </div>
 
-      <p className="text-xs text-text-secondary leading-relaxed">
+      <p className="text-xs text-muted-foreground leading-relaxed">
         Your API key is stored locally on your device. It is only sent to OpenRouter to make API requests.
         Get your key from{" "}
         <a
           href="https://openrouter.ai/keys"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary hover:text-primary-hover underline"
+          className="text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
         >
           openrouter.ai/keys
         </a>

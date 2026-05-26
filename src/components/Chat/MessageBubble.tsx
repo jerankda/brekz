@@ -1,7 +1,8 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Message } from "../../types/chat";
-import { Bot, User } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 interface MessageBubbleProps {
   message: Message
@@ -12,47 +13,58 @@ interface MessageBubbleProps {
 function MessageBubble({ message, isStreaming, streamingContent }: MessageBubbleProps) {
   const isUser = message.role === "user";
   const content = isStreaming ? (streamingContent ?? "") : message.content;
+  const isEmpty = !content && isStreaming;
 
   return (
-    <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
-      <div
-        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-          isUser ? "bg-primary" : "bg-code-bg"
-        }`}
-      >
-        {isUser ? (
-          <User size={14} className="text-white" />
-        ) : (
-          <Bot size={14} className="text-primary" />
-        )}
-      </div>
-
-      <div className={`max-w-[640px] min-w-0 ${isUser ? "items-end" : "items-start"} flex flex-col`}>
-        <div
-          className={`rounded-xl px-4 py-3 text-sm leading-relaxed ${
+    <div
+      className={cn(
+        "flex gap-4 animate-fade-up",
+        isUser ? "flex-row-reverse" : "flex-row"
+      )}
+    >
+      <Avatar size="sm">
+        <AvatarFallback
+          className={cn(
+            "text-[10px] font-semibold",
             isUser
-              ? "bg-primary text-white rounded-tr-md"
-              : "bg-surface border border-border text-text-primary rounded-tl-md"
-          }`}
-        >
-          {isUser ? (
-            <p className="whitespace-pre-wrap">{content}</p>
-          ) : (
-            <div className="prose prose-sm max-w-none prose-p:leading-relaxed prose-pre:bg-code-bg prose-pre:border prose-pre:border-border prose-code:text-text-primary prose-code:bg-code-bg prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-a:text-primary">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {content || (isStreaming ? "" : "...")}
-              </ReactMarkdown>
-            </div>
+              ? "bg-primary/15 text-primary ring-1 ring-primary/20"
+              : "bg-muted text-muted-foreground border border-border"
           )}
-        </div>
+        >
+          {isUser ? "Y" : "AI"}
+        </AvatarFallback>
+      </Avatar>
 
-        {!isUser && (
-          <div className="flex items-center gap-2 mt-1 px-1">
-            <span className="text-[10px] text-text-secondary font-mono">
-              {message.model || (isStreaming ? "..." : "")}
-            </span>
+      <div className={cn("max-w-[640px] min-w-0 flex flex-col", isUser ? "items-end" : "items-start")}>
+        {isUser ? (
+          <div className="rounded-2xl rounded-tr-md px-5 py-3 bg-secondary/60 text-[15px] leading-relaxed text-foreground">
+            <p className="whitespace-pre-wrap">{content}</p>
+          </div>
+        ) : (
+          <div className="text-[15px] leading-relaxed text-foreground prose prose-neutral dark:prose-invert max-w-none">
+            {isEmpty ? (
+              <div className="flex items-center gap-1.5 py-1">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-pulse" />
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-pulse" style={{ animationDelay: "0.15s" }} />
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-pulse" style={{ animationDelay: "0.3s" }} />
+              </div>
+            ) : (
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {content}
+              </ReactMarkdown>
+            )}
+          </div>
+        )}
+
+        {!isUser && !isEmpty && (
+          <div className="flex items-center gap-2 mt-1.5">
+            {message.model && (
+              <span className="text-[11px] text-muted-foreground/60 font-mono">
+                {message.model.split("/").pop()}
+              </span>
+            )}
             {(message.input_tokens > 0 || message.output_tokens > 0) && (
-              <span className="text-[10px] text-text-secondary font-mono">
+              <span className="text-[11px] text-muted-foreground/60 font-mono">
                 · {message.input_tokens}↑ {message.output_tokens}↓
               </span>
             )}
