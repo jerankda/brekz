@@ -2,11 +2,6 @@ use serde::{Deserialize, Serialize};
 
 // ── Model listing types ──
 
-#[derive(Debug, Deserialize)]
-pub struct ModelsResponse {
-    pub data: Vec<ModelInfo>,
-}
-
 #[derive(Debug, Clone, Deserialize)]
 pub struct ModelInfo {
     pub id: String,
@@ -77,7 +72,6 @@ pub struct ChatResponse {
 #[derive(Debug, Deserialize)]
 pub struct Choice {
     pub delta: Option<Delta>,
-    pub message: Option<ResponseMessage>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -85,16 +79,10 @@ pub struct Delta {
     pub content: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct ResponseMessage {
-    pub content: String,
-}
-
 #[derive(Debug, Clone, Deserialize)]
 pub struct Usage {
     pub prompt_tokens: u32,
     pub completion_tokens: u32,
-    pub total_tokens: u32,
 }
 
 // ── Database types ──
@@ -137,12 +125,6 @@ pub struct StreamDonePayload {
     pub model: String,
     pub input_tokens: u32,
     pub output_tokens: u32,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct StreamErrorPayload {
-    pub conversation_id: String,
-    pub error: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

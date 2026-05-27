@@ -14,11 +14,12 @@ const BASE_URL: &str = "https://openrouter.ai/api/v1";
 const REFERER: &str = "https://github.com/brekz-app";
 const APP_TITLE: &str = "Brekz";
 
-fn build_client(api_key: &str, read_timeout_secs: u64) -> reqwest::Client {
+fn build_client(api_key: &str, read_timeout_secs: u64) -> Result<reqwest::Client, String> {
     let mut headers = header::HeaderMap::new();
     headers.insert(
         header::AUTHORIZATION,
-        header::HeaderValue::from_str(&format!("Bearer {}", api_key)).unwrap(),
+        header::HeaderValue::from_str(&format!("Bearer {}", api_key))
+            .map_err(|e| format!("Invalid API key format: {}", e))?,
     );
     headers.insert(
         header::HeaderName::from_static("http-referer"),
@@ -37,11 +38,11 @@ fn build_client(api_key: &str, read_timeout_secs: u64) -> reqwest::Client {
         .default_headers(headers)
         .timeout(Duration::from_secs(read_timeout_secs))
         .build()
-        .unwrap()
+        .map_err(|e| format!("Failed to create HTTP client: {}", e))
 }
 
 pub async fn validate_api_key(api_key: &str) -> Result<bool, String> {
-    let client = build_client(api_key, 15);
+    let client = build_client(api_key, 15)?;
     let url = format!("{}/chat/completions", BASE_URL);
 
     let body = serde_json::json!({
@@ -63,7 +64,7 @@ pub async fn validate_api_key(api_key: &str) -> Result<bool, String> {
 }
 
 pub async fn fetch_models(api_key: &str) -> Result<Vec<ModelEntry>, String> {
-    let client = build_client(api_key, 30);
+    let client = build_client(api_key, 30)?;
     let url = format!("{}/models", BASE_URL);
 
     let response = client
@@ -133,7 +134,7 @@ pub async fn fetch_models(api_key: &str) -> Result<Vec<ModelEntry>, String> {
 }
 
 pub async fn generate_title(api_key: &str, user_message: &str, assistant_message: &str) -> Result<String, String> {
-    let client = build_client(api_key, 30);
+    let client = build_client(api_key, 30)?;
     let url = format!("{}/chat/completions", BASE_URL);
 
     let prompt = format!(
@@ -189,7 +190,7 @@ pub async fn stream_chat<R: Runtime>(
     messages: &[ChatMessage],
     settings: &super::types::ChatSettings,
 ) -> Result<(), String> {
-    let client = build_client(api_key, 300);
+    let client = build_client(api_key, 300)?;
     let url = format!("{}/chat/completions", BASE_URL);
 
     let body = ChatRequest {

@@ -61,39 +61,41 @@ pub fn update_conversation(
     model: Option<&str>,
     system_prompt: Option<&str>,
 ) -> Result<(), String> {
-    if let Some(title) = title {
-        let now = chrono::Utc::now().to_rfc3339();
-        conn.execute(
-            "UPDATE conversations SET title = ?1, updated_at = ?2 WHERE id = ?3",
-            rusqlite::params![title, now, id],
-        )
+    let now = chrono::Utc::now().to_rfc3339();
+    let (sql, params): (String, Vec<Box<dyn rusqlite::types::ToSql>>) = {
+        let mut sets = Vec::new();
+        let mut vals: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
+        if let Some(t) = title {
+            sets.push("title = ?");
+            vals.push(Box::new(t.to_string()));
+        }
+        if let Some(m) = model {
+            sets.push("model = ?");
+            vals.push(Box::new(m.to_string()));
+        }
+        if let Some(s) = system_prompt {
+            sets.push("system_prompt = ?");
+            vals.push(Box::new(s.to_string()));
+        }
+        if sets.is_empty() {
+            return Ok(());
+        }
+        sets.push("updated_at = ?");
+        vals.push(Box::new(now));
+        let sql = format!(
+            "UPDATE conversations SET {} WHERE id = ?",
+            sets.join(", ")
+        );
+        vals.push(Box::new(id.to_string()));
+        (sql, vals)
+    };
+    let params_ref: Vec<&dyn rusqlite::types::ToSql> = params.iter().map(|p| p.as_ref()).collect();
+    conn.execute(&sql, params_ref.as_slice())
         .map_err(|e| format!("DB error: {}", e))?;
-    }
-    if let Some(model) = model {
-        let now = chrono::Utc::now().to_rfc3339();
-        conn.execute(
-            "UPDATE conversations SET model = ?1, updated_at = ?2 WHERE id = ?3",
-            rusqlite::params![model, now, id],
-        )
-        .map_err(|e| format!("DB error: {}", e))?;
-    }
-    if let Some(system_prompt) = system_prompt {
-        let now = chrono::Utc::now().to_rfc3339();
-        conn.execute(
-            "UPDATE conversations SET system_prompt = ?1, updated_at = ?2 WHERE id = ?3",
-            rusqlite::params![system_prompt, now, id],
-        )
-        .map_err(|e| format!("DB error: {}", e))?;
-    }
     Ok(())
 }
 
 pub fn delete_conversation(conn: &Connection, id: &str) -> Result<(), String> {
-    conn.execute(
-        "DELETE FROM messages WHERE conversation_id = ?1",
-        rusqlite::params![id],
-    )
-    .map_err(|e| format!("DB error: {}", e))?;
     conn.execute(
         "DELETE FROM conversations WHERE id = ?1",
         rusqlite::params![id],
