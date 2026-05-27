@@ -107,4 +107,4 @@ React (Zustand stores)  <--invoke/listen-->  Rust (Tauri commands)  <--HTTP/SSE-
 
 ## License
 
-All rights reserved. This project is currently not open-source licensed.
+MIT — see [LICENSE](LICENSE) for details.
