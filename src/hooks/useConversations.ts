@@ -53,10 +53,6 @@ export function useConversations() {
     }
   }, [currentConversationId, setCurrentConversation, setMessages]);
 
-  const setConversationTitle = useCallback(async (id: string, title: string) => {
-    await invoke("set_conversation_title", { id, title });
-  }, []);
-
   const saveMessage = useCallback(async (msg: {
     id: string; conversation_id: string; role: string; content: string;
     model: string; input_tokens: number; output_tokens: number;
@@ -74,7 +70,6 @@ export function useConversations() {
     loadConversation,
     loadConversations,
     deleteConversation,
-    setConversationTitle,
     saveMessage,
   };
 }

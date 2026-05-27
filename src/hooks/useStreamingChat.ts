@@ -5,14 +5,12 @@ import { v4 as uuid } from "uuid";
 import { useChatStore } from "../stores/chatStore";
 import { useSettingsStore } from "../stores/settingsStore";
 import { useConversations } from "./useConversations";
-import type { Message, StreamChunkPayload, StreamDonePayload, StreamErrorPayload } from "../types/chat";
+import type { Message, StreamChunkPayload, StreamDonePayload } from "../types/chat";
 
 export function useStreamingChat() {
   const {
     currentConversationId,
-    messages,
     isStreaming,
-    streamingContent,
     startStreaming,
     appendChunk,
     stopStreaming,
@@ -63,14 +61,9 @@ export function useStreamingChat() {
       }
     });
 
-    const unlistenError = listen<StreamErrorPayload>("stream-error", (event) => {
-      setChatError(event.payload.error);
-    });
-
     return () => {
       unlistenChunk.then((f) => f());
       unlistenDone.then((f) => f());
-      unlistenError.then((f) => f());
     };
   }, [saveMessage, addMessage, appendChunk, stopStreaming, setChatError, apiKey, bumpTitleRefresh]);
 
@@ -125,8 +118,8 @@ export function useStreamingChat() {
         setChatError(String(e));
       }
     },
-    [apiKey, currentConversationId, isStreaming, messages, defaultTemperature, defaultMaxTokens, saveMessage, addMessage, startStreaming, setChatError],
+    [apiKey, currentConversationId, isStreaming, defaultTemperature, defaultMaxTokens, saveMessage, addMessage, startStreaming, setChatError],
   );
 
-  return { sendMessage, isStreaming, streamingContent };
+  return { sendMessage, isStreaming };
 }

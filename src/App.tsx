@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Sidebar from "./components/Sidebar/Sidebar";
 import ChatView from "./components/Chat/ChatView";
 import SettingsModal from "./components/Settings/SettingsModal";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { useSettingsStore } from "./stores/settingsStore";
 import { useUIStore } from "./stores/uiStore";
 
@@ -17,6 +18,7 @@ function App() {
   }, [load]);
 
   return (
+    <ErrorBoundary>
     <div className="flex h-full w-full bg-background">
       <div
         className={`h-full flex-shrink-0 transition-all duration-300 ease-in-out ${
@@ -39,6 +41,7 @@ function App() {
       </main>
       <SettingsModal />
     </div>
+    </ErrorBoundary>
   );
 }
 

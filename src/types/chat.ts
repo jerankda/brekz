@@ -39,10 +39,3 @@ export interface StreamDonePayload {
   input_tokens: number
   output_tokens: number
 }
-
-export interface StreamErrorPayload {
-  conversation_id: string
-  error: string
-}
-
-export type { AppSettings } from "./settings";
