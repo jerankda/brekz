@@ -80,7 +80,7 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           files: |
-            brekz-macos.dmg
-            brekz-linux.deb
-            brekz-windows.msi
+            *.dmg
+            *.deb
+            *.msi
           generate_release_notes: true
