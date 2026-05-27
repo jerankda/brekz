@@ -1,0 +1,83 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            bundle-name: brekz-macos.dmg
+            bundle-path: src-tauri/target/release/bundle/dmg/*.dmg
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            bundle-name: brekz-linux.deb
+            bundle-path: src-tauri/target/release/bundle/deb/*.deb
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            bundle-name: brekz-windows.msi
+            bundle-path: src-tauri/target/release/bundle/msi/*.msi
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install Linux deps
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run tauri build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.bundle-name }}
+          path: ${{ matrix.bundle-path }}
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: brekz-*
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            brekz-macos.dmg
+            brekz-linux.deb
+            brekz-windows.msi
+          generate_release_notes: true
