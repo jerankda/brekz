@@ -55,7 +55,7 @@ function Sidebar() {
     <aside className="h-full flex flex-col bg-sidebar border-r border-sidebar-border">
       <header className="flex items-center justify-between px-4 py-3">
         <h1 className="font-heading text-base font-medium tracking-tight text-sidebar-foreground">
-          Brekz
+          brekz.
         </h1>
         <Button
           variant="ghost"

@@ -81,7 +81,7 @@ function MessageInput({ onSend }: MessageInputProps) {
         </div>
 
         <p className="text-xs text-muted-foreground/30 text-center mt-2.5">
-          Brekz can make mistakes. Verify important information.
+          brekz. can make mistakes. Verify important information.
         </p>
       </div>
     </div>

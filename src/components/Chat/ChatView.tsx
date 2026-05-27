@@ -66,7 +66,7 @@ function ChatView() {
 
   if (!apiKey) {
     return (
-      <EmptyState title="Welcome to Brekz">
+      <EmptyState title="Welcome to brekz.">
         Add your OpenRouter API key in Settings to start chatting with any AI model.
       </EmptyState>
     );

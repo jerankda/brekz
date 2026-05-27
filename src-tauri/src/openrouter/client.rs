@@ -12,7 +12,7 @@ use crate::openrouter::types::{
 
 const BASE_URL: &str = "https://openrouter.ai/api/v1";
 const REFERER: &str = "https://github.com/brekz-app";
-const APP_TITLE: &str = "Brekz";
+const APP_TITLE: &str = "brekz.";
 
 fn build_client(api_key: &str, read_timeout_secs: u64) -> Result<reqwest::Client, String> {
     let mut headers = header::HeaderMap::new();
