@@ -1,7 +1,8 @@
-import { Plus, Search, Settings, MessageSquare, PanelLeftClose, Trash2 } from "lucide-react";
+import { Plus, Settings, PanelLeftClose, Trash2 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useUIStore } from "../../stores/uiStore";
 import { useChatStore } from "../../stores/chatStore";
+import { useSettingsStore } from "../../stores/settingsStore";
 import { useConversations } from "../../hooks/useConversations";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -21,9 +22,9 @@ function Sidebar() {
   const { openSettings, toggleSidebar } = useUIStore();
   const currentConversationId = useChatStore((s) => s.currentConversationId);
   const titleRefreshVersion = useChatStore((s) => s.titleRefreshVersion);
+  const defaultModel = useSettingsStore((s) => s.defaultModel);
   const { createConversation, loadConversation, loadConversations, deleteConversation } = useConversations();
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [search, setSearch] = useState("");
 
   const refreshList = useCallback(async () => {
     const list = await loadConversations();
@@ -32,12 +33,12 @@ function Sidebar() {
 
   useEffect(() => {
     refreshList();
-  }, [refreshList, currentConversationId, titleRefreshVersion]);
+  }, [refreshList, titleRefreshVersion]);
 
   const handleNewChat = useCallback(async () => {
-    await createConversation("");
+    await createConversation(defaultModel);
     await refreshList();
-  }, [createConversation, refreshList]);
+  }, [createConversation, refreshList, defaultModel]);
 
   const handleSelect = useCallback(async (id: string) => {
     if (id === currentConversationId) return;
@@ -50,14 +51,10 @@ function Sidebar() {
     await refreshList();
   }, [deleteConversation, refreshList]);
 
-  const filtered = search
-    ? conversations.filter((c) => c.title.toLowerCase().includes(search.toLowerCase()))
-    : conversations;
-
   return (
     <aside className="h-full flex flex-col bg-sidebar border-r border-sidebar-border">
       <header className="flex items-center justify-between px-4 py-3">
-        <h1 className="font-heading text-[17px] font-semibold tracking-tight">
+        <h1 className="font-heading text-base font-medium tracking-tight text-sidebar-foreground">
           Brekz
         </h1>
         <Button
@@ -71,55 +68,46 @@ function Sidebar() {
 
       <Separator />
 
-      <div className="p-3 space-y-2">
-        <Button onClick={handleNewChat} className="w-full gap-2 rounded-lg">
-          <Plus size={15} />
-          <span>New Chat</span>
+      <div className="p-3">
+        <Button onClick={handleNewChat} variant="outline" className="w-full gap-2 rounded-lg text-sm text-muted-foreground">
+          <Plus size={14} />
+          <span>New conversation</span>
         </Button>
-
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 text-muted-foreground text-sm border border-transparent focus-within:border-border transition-colors duration-200">
-          <Search size={13} className="flex-shrink-0" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search conversations..."
-            className="bg-transparent border-none outline-none text-foreground text-sm w-full placeholder:text-muted-foreground"
-          />
-        </div>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-2 py-1">
-        {filtered.length === 0 ? (
-          <p className="text-muted-foreground text-xs text-center py-12">
-            {search ? "No matching conversations" : "No conversations yet"}
+        {conversations.length === 0 ? (
+          <p className="text-muted-foreground/50 text-xs text-center py-12">
+            No conversations yet
           </p>
         ) : (
           <div className="space-y-0.5">
-            {filtered.map((conv) => (
+            {conversations.map((conv) => (
               <div key={conv.id} className="group relative">
                 <button
                   onClick={() => handleSelect(conv.id)}
                   className={cn(
-                    "w-full flex items-start gap-2.5 px-3 py-2.5 rounded-lg text-left text-sm transition-colors duration-150",
+                    "w-full flex items-start gap-2 px-3 py-2 rounded-lg text-left text-sm transition-colors duration-150",
                     conv.id === currentConversationId
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                   )}
                 >
-                  <MessageSquare size={13} className="mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="truncate text-[13px] font-medium leading-snug text-foreground">
+                    <p className={cn(
+                      "truncate text-sm leading-snug",
+                      conv.id === currentConversationId ? "text-sidebar-accent-foreground" : "text-sidebar-foreground/80"
+                    )}>
                       {conv.title || "New conversation"}
                     </p>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       {conv.model && (
-                        <span className="text-[10px] font-mono truncate text-muted-foreground/70 max-w-[110px]">
+                        <span className="text-[11px] font-mono text-sidebar-foreground/40 max-w-[110px] truncate">
                           {conv.model.split("/").pop()}
                         </span>
                       )}
-                      <span className="text-[10px] text-muted-foreground/50">·</span>
-                      <span className="text-[10px] text-muted-foreground/70 whitespace-nowrap">
+                      {conv.model && <span className="text-[11px] text-sidebar-foreground/30">·</span>}
+                      <span className="text-[11px] text-sidebar-foreground/40 whitespace-nowrap">
                         {formatTime(conv.updated_at)}
                       </span>
                     </div>
@@ -128,14 +116,14 @@ function Sidebar() {
                 <button
                   onClick={(e) => handleDelete(e, conv.id)}
                   className={cn(
-                    "absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100",
+                    "absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100",
                     "w-6 h-6 rounded-md flex items-center justify-center",
-                    "text-muted-foreground hover:text-destructive hover:bg-destructive/10",
+                    "text-sidebar-foreground/30 hover:text-destructive hover:bg-destructive/10",
                     "transition-all duration-150"
                   )}
                   title="Delete"
                 >
-                  <Trash2 size={12} />
+                  <Trash2 size={11} />
                 </button>
               </div>
             ))}
@@ -149,7 +137,7 @@ function Sidebar() {
         <Button
           variant="ghost"
           onClick={() => openSettings()}
-          className="w-full justify-start gap-2.5"
+          className="w-full justify-start gap-2 text-sm text-sidebar-foreground/50 hover:text-sidebar-foreground"
         >
           <Settings size={14} />
           <span>Settings</span>
