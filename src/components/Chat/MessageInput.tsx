@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +15,10 @@ function MessageInput({ onSend }: MessageInputProps) {
   const isStreaming = useChatStore((s) => s.isStreaming);
   const { defaultModel, setDefaultModel } = useSettingsStore();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, []);
 
   const adjustHeight = useCallback(() => {
     const el = textareaRef.current;
@@ -48,11 +52,11 @@ function MessageInput({ onSend }: MessageInputProps) {
   return (
     <div className="px-4 pb-5 pt-2">
       <div className="max-w-[720px] mx-auto w-full">
-        <div className="w-full max-w-[260px] mb-3">
+        <div className="flex items-center gap-2 mb-2">
           <ModelSelector value={defaultModel} onChange={setDefaultModel} />
         </div>
 
-        <div className="flex items-end gap-2 bg-card border border-border/40 rounded-2xl px-4 py-3 shadow-2xl shadow-black/30 focus-within:border-primary/30 focus-within:ring-2 focus-within:ring-primary/10 transition-all duration-200">
+        <div className="flex items-end gap-2 bg-card border border-border/40 rounded-2xl px-4 py-3 focus-within:border-border/80 focus-within:ring-1 focus-within:ring-border/20 transition-all duration-200">
           <Textarea
             ref={textareaRef}
             value={input}
@@ -64,19 +68,19 @@ function MessageInput({ onSend }: MessageInputProps) {
             placeholder="Ask anything..."
             rows={1}
             disabled={isStreaming}
-            className="flex-1 border-0 bg-transparent px-0 py-0 min-h-0 resize-none text-[15px] leading-relaxed placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="flex-1 border-0 bg-transparent px-0 py-0 min-h-0 resize-none text-base leading-relaxed placeholder:text-muted-foreground/40 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
           <Button
             onClick={handleSend}
             disabled={!canSend}
             size="icon"
-            className="rounded-xl flex-shrink-0 size-9"
+            className="rounded-xl flex-shrink-0 size-9 bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted border-0"
           >
             <ArrowUp size={17} strokeWidth={2.5} />
           </Button>
         </div>
 
-        <p className="text-[11px] text-muted-foreground/50 text-center mt-2.5">
+        <p className="text-xs text-muted-foreground/30 text-center mt-2.5">
           Brekz can make mistakes. Verify important information.
         </p>
       </div>

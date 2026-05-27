@@ -75,13 +75,13 @@ function ModelSelector({ value, onChange, disabled = false }: ModelSelectorProps
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between text-[13px] font-normal"
+          className="w-full justify-between text-sm font-normal"
         >
           <span className="truncate">{selectLabel}</span>
           <ChevronDown size={13} className="text-muted-foreground flex-shrink-0 ml-2" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[280px] p-0" align="start" sideOffset={4}>
+      <PopoverContent className="w-[340px] p-0" align="start" sideOffset={4}>
         <Command>
           <CommandInput placeholder="Search any model..." />
           <CommandList>
@@ -101,10 +101,10 @@ function ModelSelector({ value, onChange, disabled = false }: ModelSelectorProps
                         setOpen(false);
                       }}
                     >
-                      <Sparkles size={13} className="text-primary/60" />
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <span className="truncate text-[13px]">{m.name}</span>
-                        <span className="text-[11px] text-muted-foreground truncate">
+                      <Sparkles size={13} className="text-primary/60 flex-shrink-0" />
+                      <div className="flex flex-col min-w-0 flex-1 ml-2">
+                        <span className="text-[13px] text-foreground">{m.name}</span>
+                        <span className="text-[11px] text-muted-foreground">
                           {PROVIDER_LABELS[provider] || provider}
                           {isFree ? " · Free" : ""}
                         </span>
@@ -135,8 +135,8 @@ function ModelSelector({ value, onChange, disabled = false }: ModelSelectorProps
                     }}
                   >
                     <div className="flex flex-col min-w-0 flex-1">
-                      <span className="truncate text-[13px]">{m.name}</span>
-                      <span className="text-[11px] text-muted-foreground truncate">
+                      <span className="text-[13px] text-foreground">{m.name}</span>
+                      <span className="text-[11px] text-muted-foreground">
                         {m.id}
                         {isFree ? " · Free" : ""}
                       </span>
