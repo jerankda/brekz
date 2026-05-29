@@ -13,6 +13,15 @@
 <p align="center">
   <a href="https://github.com/jerankda/brekz/actions"><img src="https://github.com/jerankda/brekz/actions/workflows/build.yml/badge.svg" alt="Build status" /></a>
   <a href="https://github.com/jerankda/brekz/releases"><img src="https://img.shields.io/github/v/release/jerankda/brekz" alt="Latest release" /></a>
+  <a href="https://star-history.com/#jerankda/brekz"><img src="https://img.shields.io/github/stars/jerankda/brekz?style=social" alt="GitHub stars" /></a>
+</p>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=jerankda/brekz&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=jerankda/brekz&type=Date" />
+    <img src="https://api.star-history.com/svg?repos=jerankda/brekz&type=Date" alt="Star History Chart" />
+  </picture>
 </p>
 
 ---
