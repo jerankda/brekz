@@ -21,6 +21,8 @@
   <img src="img.png" alt="brekz. screenshot" width="800" />
 </p>
 
+> **⚠️ Beta — Expect bugs, missing features, and rough edges. Things may break.**
+
 ## Overview
 
 brekz. is a desktop application that connects directly to the [OpenRouter](https://openrouter.ai) API. It provides a native, dark-themed chat interface with conversation history, streaming responses, and support for every model OpenRouter exposes -- from Anthropic's Claude to OpenAI's GPT, DeepSeek, Google Gemini, and hundreds more.
