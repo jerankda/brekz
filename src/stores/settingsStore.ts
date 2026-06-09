@@ -1,6 +1,9 @@
 import { create } from "zustand";
 import { Store } from "@tauri-apps/plugin-store";
+import { invoke } from "@tauri-apps/api/core";
 import type { AppSettings } from "../types/settings";
+import type { ModelEntry } from "../types/chat";
+import { useModelStore } from "./modelStore";
 
 interface SettingsState extends AppSettings {
   loaded: boolean
@@ -52,6 +55,24 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       darkMode: darkMode ?? false,
       loaded: true,
     });
+
+    if (apiKey) {
+      try {
+        const valid = await invoke<boolean>("validate_api_key", { apiKey });
+        set({ apiKeyValid: valid });
+        if (valid) {
+          const models = await invoke<ModelEntry[]>("fetch_models", { apiKey });
+          useModelStore.getState().setModels(models);
+          if (!defaultModel && models.length > 0) {
+            await store.set("defaultModel", models[0].id);
+            await store.save();
+            set({ defaultModel: models[0].id });
+          }
+        }
+      } catch {
+        set({ apiKeyValid: false });
+      }
+    }
   },
 
   setApiKey: async (key) => {
