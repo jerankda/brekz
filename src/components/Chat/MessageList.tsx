@@ -41,6 +41,7 @@ function MessageList() {
               conversation_id: "",
               role: "assistant",
               content: "",
+              attachments: "[]",
               model: "",
               input_tokens: 0,
               output_tokens: 0,

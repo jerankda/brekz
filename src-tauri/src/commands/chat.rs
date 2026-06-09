@@ -3,7 +3,7 @@ use tauri::AppHandle;
 use crate::db::AppDatabase;
 use crate::db::queries;
 use crate::openrouter::client;
-use crate::openrouter::types::{ChatMessage, ChatSettings};
+use crate::openrouter::types::{ChatMessage, ChatSettings, FileAttachment};
 
 #[tauri::command]
 pub async fn send_message(
@@ -13,8 +13,24 @@ pub async fn send_message(
     model: String,
     messages: Vec<ChatMessage>,
     settings: ChatSettings,
+    files: Option<Vec<FileAttachment>>,
 ) -> Result<(), String> {
-    client::stream_chat(&app, &api_key, &conversation_id, &model, &messages, &settings).await
+    let mut chat_messages = messages;
+    if let Some(attachments) = files {
+        if let Some(last) = chat_messages.last_mut() {
+            if last.role == "user" {
+                let text = last
+                    .content
+                    .as_ref()
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string();
+                let parts: Vec<_> = attachments.iter().map(crate::openrouter::types::ContentPart::from_attachment).collect();
+                *last = ChatMessage::with_parts("user", &text, parts);
+            }
+        }
+    }
+    client::stream_chat(&app, &api_key, &conversation_id, &model, &chat_messages, &settings).await
 }
 
 #[tauri::command]

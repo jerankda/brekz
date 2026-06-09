@@ -5,6 +5,7 @@ import { useConversations } from "../../hooks/useConversations";
 import { useStreamingChat } from "../../hooks/useStreamingChat";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
+import type { FileAttachment } from "../../types/chat";
 
 function EmptyState({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -33,14 +34,14 @@ function ChatView() {
   const { sendMessage } = useStreamingChat();
 
   const handleSend = useCallback(
-    async (content: string, model: string) => {
+    async (content: string, model: string, files?: FileAttachment[]) => {
       let convId = currentConversationId;
       if (!convId) {
         const conv = await createConversation(model);
         convId = conv.id;
       }
       if (!convId) return;
-      sendMessage(content, model, convId);
+      sendMessage(content, model, convId, files);
     },
     [currentConversationId, createConversation, sendMessage],
   );

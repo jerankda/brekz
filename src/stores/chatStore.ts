@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Message } from "../types/chat";
+import type { Message, FileAttachment } from "../types/chat";
 
 interface ChatState {
   currentConversationId: string | null
@@ -9,6 +9,7 @@ interface ChatState {
   streamingMessageId: string | null
   error: string | null
   titleRefreshVersion: number
+  pendingFiles: FileAttachment[]
 
   setCurrentConversation: (id: string | null) => void
   setMessages: (messages: Message[]) => void
@@ -19,6 +20,9 @@ interface ChatState {
   stopStreaming: () => void
   setError: (error: string | null) => void
   bumpTitleRefresh: () => void
+  addPendingFile: (file: FileAttachment) => void
+  removePendingFile: (id: string) => void
+  clearPendingFiles: () => void
 }
 
 export const useChatStore = create<ChatState>((set) => ({
@@ -29,6 +33,7 @@ export const useChatStore = create<ChatState>((set) => ({
   streamingMessageId: null,
   error: null,
   titleRefreshVersion: 0,
+  pendingFiles: [],
 
   setCurrentConversation: (id) => set({ currentConversationId: id }),
 
@@ -64,4 +69,12 @@ export const useChatStore = create<ChatState>((set) => ({
   bumpTitleRefresh: () =>
     set((s) => ({ titleRefreshVersion: s.titleRefreshVersion + 1 }),
   ),
+
+  addPendingFile: (file) =>
+    set((s) => ({ pendingFiles: [...s.pendingFiles, file] })),
+
+  removePendingFile: (id) =>
+    set((s) => ({ pendingFiles: s.pendingFiles.filter((f) => f.id !== id) })),
+
+  clearPendingFiles: () => set({ pendingFiles: [] }),
 }));

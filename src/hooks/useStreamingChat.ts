@@ -5,7 +5,7 @@ import { v4 as uuid } from "uuid";
 import { useChatStore } from "../stores/chatStore";
 import { useSettingsStore } from "../stores/settingsStore";
 import { useConversations } from "./useConversations";
-import type { Message, StreamChunkPayload, StreamDonePayload } from "../types/chat";
+import type { Message, StreamChunkPayload, StreamDonePayload, FileAttachment } from "../types/chat";
 
 export function useStreamingChat() {
   const {
@@ -17,6 +17,7 @@ export function useStreamingChat() {
     addMessage,
     setError: setChatError,
     bumpTitleRefresh,
+    clearPendingFiles,
   } = useChatStore();
 
   const { apiKey, defaultTemperature, defaultMaxTokens } = useSettingsStore();
@@ -36,6 +37,7 @@ export function useStreamingChat() {
         conversation_id,
         role: "assistant" as const,
         content,
+        attachments: "[]",
         model,
         input_tokens,
         output_tokens,
@@ -68,15 +70,18 @@ export function useStreamingChat() {
   }, [saveMessage, addMessage, appendChunk, stopStreaming, setChatError, apiKey, bumpTitleRefresh]);
 
   const sendMessage = useCallback(
-    async (content: string, model: string, convId?: string) => {
+    async (content: string, model: string, convId?: string, files?: FileAttachment[]) => {
       const id = convId ?? currentConversationId;
       if (!apiKey || !id || isStreaming) return;
+
+      const attachmentsJson = files && files.length > 0 ? JSON.stringify(files) : "[]";
 
       const userMsg = {
         id: uuid(),
         conversation_id: id,
         role: "user" as const,
         content,
+        attachments: attachmentsJson,
         model: "",
         input_tokens: 0,
         output_tokens: 0,
@@ -114,12 +119,15 @@ export function useStreamingChat() {
             temperature: defaultTemperature,
             max_tokens: defaultMaxTokens,
           },
+          files: files && files.length > 0 ? files : null,
         });
       } catch (e) {
         setChatError(String(e));
       }
+
+      clearPendingFiles();
     },
-    [apiKey, isStreaming, defaultTemperature, defaultMaxTokens, saveMessage, addMessage, startStreaming, setChatError],
+    [apiKey, isStreaming, defaultTemperature, defaultMaxTokens, saveMessage, addMessage, startStreaming, setChatError, clearPendingFiles],
   );
 
   return { sendMessage, isStreaming };

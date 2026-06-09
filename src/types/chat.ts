@@ -6,11 +6,20 @@ export interface ModelEntry {
   completion_pricing: number
 }
 
+export interface FileAttachment {
+  id: string
+  name: string
+  mime_type: string
+  data: string
+  size: number
+}
+
 export interface Message {
   id: string
   conversation_id: string
   role: "user" | "assistant" | "system"
   content: string
+  attachments: string
   model: string
   input_tokens: number
   output_tokens: number

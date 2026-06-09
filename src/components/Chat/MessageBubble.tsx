@@ -1,6 +1,8 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { FileText } from "lucide-react";
 import type { Message } from "../../types/chat";
+import { getFileTypeCategory } from "../../lib/visionModels";
 import { cn } from "@/lib/utils";
 
 interface MessageBubbleProps {
@@ -14,6 +16,11 @@ function MessageBubble({ message, isStreaming, streamingContent }: MessageBubble
   const content = isStreaming ? (streamingContent ?? "") : message.content;
   const isEmpty = !content && isStreaming;
 
+  let attachments: Array<{ id: string; name: string; mime_type: string; data: string; size: number }> = [];
+  try {
+    attachments = JSON.parse(message.attachments || "[]");
+  } catch {}
+
   return (
     <div
       className={cn(
@@ -24,7 +31,34 @@ function MessageBubble({ message, isStreaming, streamingContent }: MessageBubble
       <div className={cn("max-w-[680px] min-w-0 flex flex-col", isUser ? "items-end" : "items-start")}>
         {isUser ? (
           <div className="rounded-2xl px-5 py-3 bg-secondary/80 text-[16px] leading-relaxed text-foreground/90">
-            <p className="whitespace-pre-wrap">{content}</p>
+            {attachments.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {attachments.map((file) => {
+                  const category = getFileTypeCategory(file.mime_type);
+                  if (category === "image") {
+                    return (
+                      <div key={file.id} className="relative group">
+                        <img
+                          src={`data:${file.mime_type};base64,${file.data}`}
+                          alt={file.name}
+                          className="max-w-[240px] max-h-[240px] rounded-lg object-cover border border-border/20"
+                        />
+                      </div>
+                    );
+                  }
+                  return (
+                    <div
+                      key={file.id}
+                      className="flex items-center gap-2 bg-muted/60 border border-border/30 rounded-lg px-3 py-2 text-xs"
+                    >
+                      <FileText size={16} className="text-muted-foreground/60" />
+                      <span className="text-foreground/70">{file.name}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {content && <p className="whitespace-pre-wrap">{content}</p>}
           </div>
         ) : (
           <div className="text-[16px] leading-relaxed text-foreground/85 prose prose-neutral dark:prose-invert max-w-none

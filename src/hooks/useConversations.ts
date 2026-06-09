@@ -25,7 +25,7 @@ export function useConversations() {
     try {
       const msgs = await invoke<Array<{
         id: string; conversation_id: string; role: string; content: string;
-        model: string; input_tokens: number; output_tokens: number;
+        attachments: string; model: string; input_tokens: number; output_tokens: number;
         cost: number; created_at: string;
       }>>("list_messages", { conversationId: id });
       setMessages(msgs.map((m) => ({
@@ -55,7 +55,7 @@ export function useConversations() {
 
   const saveMessage = useCallback(async (msg: {
     id: string; conversation_id: string; role: string; content: string;
-    model: string; input_tokens: number; output_tokens: number;
+    attachments: string; model: string; input_tokens: number; output_tokens: number;
     cost: number; created_at: string;
   }) => {
     await invoke("insert_message", { message: msg });

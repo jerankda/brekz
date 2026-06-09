@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS messages (
     conversation_id TEXT NOT NULL,
     role            TEXT NOT NULL CHECK(role IN ('user', 'assistant', 'system')),
     content         TEXT NOT NULL,
+    attachments     TEXT NOT NULL DEFAULT '[]',
     model           TEXT NOT NULL DEFAULT '',
     input_tokens    INTEGER DEFAULT 0,
     output_tokens   INTEGER DEFAULT 0,
