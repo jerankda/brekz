@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { useChatStore } from "../../stores/chatStore";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { useConversations } from "../../hooks/useConversations";
@@ -28,38 +28,19 @@ function ChatView() {
   const error = useChatStore((s) => s.error);
   const apiKey = useSettingsStore((s) => s.apiKey);
   const apiKeyValid = useSettingsStore((s) => s.apiKeyValid);
-  const defaultModel = useSettingsStore((s) => s.defaultModel);
 
   const { createConversation } = useConversations();
   const { sendMessage } = useStreamingChat();
 
-  const prevValidRef = useRef(apiKeyValid);
-  const creatingRef = useRef(false);
-  const mountedRef = useRef(true);
-
-  useEffect(() => {
-    return () => { mountedRef.current = false; };
-  }, []);
-
-  useEffect(() => {
-    if (apiKeyValid && !prevValidRef.current && !currentConversationId && defaultModel && !creatingRef.current) {
-      creatingRef.current = true;
-      createConversation(defaultModel).finally(() => {
-        if (mountedRef.current) creatingRef.current = false;
-      });
-    }
-    prevValidRef.current = apiKeyValid;
-  }, [apiKeyValid, currentConversationId, defaultModel, createConversation]);
-
   const handleSend = useCallback(
     async (content: string, model: string) => {
       let convId = currentConversationId;
-      if (!convId && !creatingRef.current) {
+      if (!convId) {
         const conv = await createConversation(model);
         convId = conv.id;
       }
       if (!convId) return;
-      sendMessage(content, model);
+      sendMessage(content, model, convId);
     },
     [currentConversationId, createConversation, sendMessage],
   );

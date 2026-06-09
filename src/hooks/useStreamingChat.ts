@@ -68,12 +68,13 @@ export function useStreamingChat() {
   }, [saveMessage, addMessage, appendChunk, stopStreaming, setChatError, apiKey, bumpTitleRefresh]);
 
   const sendMessage = useCallback(
-    async (content: string, model: string) => {
-      if (!apiKey || !currentConversationId || isStreaming) return;
+    async (content: string, model: string, convId?: string) => {
+      const id = convId ?? currentConversationId;
+      if (!apiKey || !id || isStreaming) return;
 
       const userMsg = {
         id: uuid(),
-        conversation_id: currentConversationId,
+        conversation_id: id,
         role: "user" as const,
         content,
         model: "",
@@ -106,7 +107,7 @@ export function useStreamingChat() {
       try {
         await invoke("send_message", {
           apiKey,
-          conversationId: currentConversationId,
+          conversationId: id,
           model,
           messages: chatMessages,
           settings: {
@@ -118,7 +119,7 @@ export function useStreamingChat() {
         setChatError(String(e));
       }
     },
-    [apiKey, currentConversationId, isStreaming, defaultTemperature, defaultMaxTokens, saveMessage, addMessage, startStreaming, setChatError],
+    [apiKey, isStreaming, defaultTemperature, defaultMaxTokens, saveMessage, addMessage, startStreaming, setChatError],
   );
 
   return { sendMessage, isStreaming };
