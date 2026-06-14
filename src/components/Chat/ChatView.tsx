@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { X } from "lucide-react";
 import { useChatStore } from "../../stores/chatStore";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { useConversations } from "../../hooks/useConversations";
@@ -27,6 +28,7 @@ function ChatView() {
   const messages = useChatStore((s) => s.messages);
   const isStreaming = useChatStore((s) => s.isStreaming);
   const error = useChatStore((s) => s.error);
+  const clearError = useChatStore((s) => s.clearError);
   const apiKey = useSettingsStore((s) => s.apiKey);
   const apiKeyValid = useSettingsStore((s) => s.apiKeyValid);
 
@@ -74,8 +76,14 @@ function ChatView() {
 
       {error && (
         <div className="mx-auto max-w-[680px] w-full px-4 pb-2">
-          <div className="px-4 py-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs animate-fade-up">
-            {error}
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs animate-fade-up">
+            <span className="flex-1">{error}</span>
+            <button
+              onClick={clearError}
+              className="ml-1 flex-shrink-0 text-destructive/50 hover:text-destructive transition-colors"
+            >
+              <X size={14} />
+            </button>
           </div>
         </div>
       )}

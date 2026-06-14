@@ -228,6 +228,7 @@ pub async fn stream_chat<R: Runtime>(
         let status = response.status().as_u16();
         return Err(match status {
             401 => "Invalid API key".to_string(),
+            404 => "Model not found or does not support file uploads. Try switching to a multimodal model (Claude, GPT-4o, Gemini).".to_string(),
             429 => "Rate limited. Please wait and try again.".to_string(),
             _ => format!("API error: HTTP {}", status),
         });

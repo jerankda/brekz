@@ -5,7 +5,7 @@ import { v4 as uuid } from "uuid";
 import { useChatStore } from "../stores/chatStore";
 import { useSettingsStore } from "../stores/settingsStore";
 import { useConversations } from "./useConversations";
-import type { Message, StreamChunkPayload, StreamDonePayload, FileAttachment } from "../types/chat";
+import type { StreamChunkPayload, StreamDonePayload, FileAttachment } from "../types/chat";
 
 export function useStreamingChat() {
   const {
@@ -20,7 +20,7 @@ export function useStreamingChat() {
     clearPendingFiles,
   } = useChatStore();
 
-  const { apiKey, defaultTemperature, defaultMaxTokens } = useSettingsStore();
+  const { apiKey, defaultTemperature, defaultMaxTokens, defaultSystemPrompt } = useSettingsStore();
   const { saveMessage } = useConversations();
   const hasSentFirstMessage = useRef(false);
   const firstUserMessage = useRef("");
@@ -104,10 +104,13 @@ export function useStreamingChat() {
       startStreaming(assistantId);
 
       const store = useChatStore.getState();
-      const chatMessages = store.messages.map((m: Message) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      const chatMessages: { role: string; content: string }[] = [];
+      if (defaultSystemPrompt) {
+        chatMessages.push({ role: "system", content: defaultSystemPrompt });
+      }
+      for (const m of store.messages) {
+        chatMessages.push({ role: m.role, content: m.content });
+      }
 
       try {
         await invoke("send_message", {
@@ -127,7 +130,7 @@ export function useStreamingChat() {
 
       clearPendingFiles();
     },
-    [apiKey, isStreaming, defaultTemperature, defaultMaxTokens, saveMessage, addMessage, startStreaming, setChatError, clearPendingFiles],
+    [apiKey, isStreaming, defaultTemperature, defaultMaxTokens, defaultSystemPrompt, saveMessage, addMessage, startStreaming, setChatError, clearPendingFiles],
   );
 
   return { sendMessage, isStreaming };

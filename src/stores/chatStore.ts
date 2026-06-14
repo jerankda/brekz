@@ -19,6 +19,7 @@ interface ChatState {
   appendChunk: (chunk: string) => void
   stopStreaming: () => void
   setError: (error: string | null) => void
+  clearError: () => void
   bumpTitleRefresh: () => void
   addPendingFile: (file: FileAttachment) => void
   removePendingFile: (id: string) => void
@@ -35,9 +36,9 @@ export const useChatStore = create<ChatState>((set) => ({
   titleRefreshVersion: 0,
   pendingFiles: [],
 
-  setCurrentConversation: (id) => set({ currentConversationId: id }),
+  setCurrentConversation: (id) => set({ currentConversationId: id, error: null }),
 
-  setMessages: (messages) => set({ messages }),
+  setMessages: (messages) => set({ messages, error: null }),
 
   addMessage: (message) => set((s) => ({ messages: [...s.messages, message] })),
 
@@ -65,6 +66,8 @@ export const useChatStore = create<ChatState>((set) => ({
     }),
 
   setError: (error) => set({ error, isStreaming: false }),
+
+  clearError: () => set({ error: null }),
 
   bumpTitleRefresh: () =>
     set((s) => ({ titleRefreshVersion: s.titleRefreshVersion + 1 }),
