@@ -6,4 +6,5 @@ export interface AppSettings {
   defaultMaxTokens: number
   defaultSystemPrompt: string
   darkMode: boolean
+  favoriteModels: string[]
 }

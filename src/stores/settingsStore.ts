@@ -16,6 +16,7 @@ interface SettingsState extends AppSettings {
   setDefaultMaxTokens: (tokens: number) => Promise<void>
   setDefaultSystemPrompt: (prompt: string) => Promise<void>
   setDarkMode: (dark: boolean) => Promise<void>
+  toggleFavoriteModel: (modelId: string) => Promise<void>
 }
 
 let storeInstance: Store | null = null;
@@ -35,6 +36,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   defaultMaxTokens: 4096,
   defaultSystemPrompt: "",
   darkMode: false,
+  favoriteModels: [],
   loaded: false,
 
   load: async () => {
@@ -45,6 +47,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     const defaultMaxTokens = await store.get<number>("defaultMaxTokens");
     const defaultSystemPrompt = await store.get<string>("defaultSystemPrompt");
     const darkMode = await store.get<boolean>("darkMode");
+    const favoriteModels = await store.get<string[]>("favoriteModels");
 
     set({
       apiKey: apiKey ?? null,
@@ -53,6 +56,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       defaultMaxTokens: defaultMaxTokens ?? 4096,
       defaultSystemPrompt: defaultSystemPrompt ?? "",
       darkMode: darkMode ?? false,
+      favoriteModels: favoriteModels ?? [],
       loaded: true,
     });
 
@@ -121,5 +125,16 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     await store.set("darkMode", dark);
     await store.save();
     set({ darkMode: dark });
+  },
+
+  toggleFavoriteModel: async (modelId) => {
+    const store = await getStore();
+    const current = useSettingsStore.getState().favoriteModels;
+    const updated = current.includes(modelId)
+      ? current.filter((id) => id !== modelId)
+      : [...current, modelId];
+    await store.set("favoriteModels", updated);
+    await store.save();
+    set({ favoriteModels: updated });
   },
 }));

@@ -62,3 +62,11 @@ pub async fn delete_conversation(
     let conn = db.conn.lock().map_err(|e| format!("DB lock error: {}", e))?;
     queries::delete_conversation(&conn, &id)
 }
+
+#[tauri::command]
+pub async fn delete_all_conversations(
+    db: tauri::State<'_, AppDatabase>,
+) -> Result<(), String> {
+    let conn = db.conn.lock().map_err(|e| format!("DB lock error: {}", e))?;
+    queries::delete_all_conversations(&conn)
+}

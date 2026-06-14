@@ -3,7 +3,7 @@ import { create } from "zustand";
 interface UIState {
   sidebarOpen: boolean
   settingsOpen: boolean
-  settingsTab: "general" | "appearance" | "models"
+  settingsTab: "general" | "appearance" | "models" | "data"
 
   toggleSidebar: () => void
   openSettings: (tab?: string) => void

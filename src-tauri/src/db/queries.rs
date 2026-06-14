@@ -148,6 +148,14 @@ pub fn delete_message(conn: &Connection, id: &str) -> Result<(), String> {
     Ok(())
 }
 
+pub fn delete_all_conversations(conn: &Connection) -> Result<(), String> {
+    conn.execute("DELETE FROM messages", [])
+        .map_err(|e| format!("DB error: {}", e))?;
+    conn.execute("DELETE FROM conversations", [])
+        .map_err(|e| format!("DB error: {}", e))?;
+    Ok(())
+}
+
 pub fn update_conversation_title(conn: &Connection, id: &str, title: &str) -> Result<(), String> {
     let now = chrono::Utc::now().to_rfc3339();
     conn.execute(

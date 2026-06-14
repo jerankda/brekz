@@ -41,6 +41,7 @@ pub fn run() {
             commands::conversations::get_conversation,
             commands::conversations::update_conversation,
             commands::conversations::delete_conversation,
+            commands::conversations::delete_all_conversations,
             commands::messages::list_messages,
             commands::messages::insert_message,
             commands::messages::delete_message,
