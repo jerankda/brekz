@@ -46,15 +46,27 @@ export const VISION_MODELS: Set<string> = new Set([
 ]);
 
 const IMAGE_MIMES = ["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"];
+const TEXT_MIMES = ["text/plain", "text/markdown", "text/csv", "text/html"];
+const PDF_MIME = "application/pdf";
 
-export const ACCEPTED_MIME_TYPES = [...IMAGE_MIMES];
-export const ACCEPTED_FILE_EXTENSIONS = ".png,.jpg,.jpeg,.gif,.webp,.svg";
+export const ACCEPTED_MIME_TYPES = [...IMAGE_MIMES, ...TEXT_MIMES, PDF_MIME];
+export const ACCEPTED_FILE_EXTENSIONS = ".png,.jpg,.jpeg,.gif,.webp,.svg,.pdf,.txt,.md,.csv,.html";
 
 export function isMultimodalModel(modelId: string): boolean {
   return VISION_MODELS.has(modelId);
 }
 
-export function getFileTypeCategory(mimeType: string): "image" | "other" {
+export function getFileTypeCategory(mimeType: string): "image" | "pdf" | "text" | "other" {
   if (IMAGE_MIMES.includes(mimeType)) return "image";
+  if (mimeType === PDF_MIME) return "pdf";
+  if (TEXT_MIMES.includes(mimeType)) return "text";
   return "other";
+}
+
+export function isImageMime(mimeType: string): boolean {
+  return IMAGE_MIMES.includes(mimeType);
+}
+
+export function isTextMime(mimeType: string): boolean {
+  return TEXT_MIMES.includes(mimeType);
 }

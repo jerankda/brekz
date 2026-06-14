@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import ModelSelector from "./ModelSelector";
 import { useChatStore } from "../../stores/chatStore";
 import { useSettingsStore } from "../../stores/settingsStore";
-import { isMultimodalModel, getFileTypeCategory, ACCEPTED_MIME_TYPES, ACCEPTED_FILE_EXTENSIONS } from "../../lib/visionModels";
+import { isMultimodalModel, getFileTypeCategory, isImageMime, isTextMime, ACCEPTED_MIME_TYPES, ACCEPTED_FILE_EXTENSIONS } from "../../lib/visionModels";
 import type { FileAttachment } from "../../types/chat";
 
 interface MessageInputProps {
@@ -25,6 +25,15 @@ function readFileAsBase64(file: File): Promise<string> {
   });
 }
 
+function readFileAsText(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsText(file);
+  });
+}
+
 function MessageInput({ onSend }: MessageInputProps) {
   const [input, setInput] = useState("");
   const isStreaming = useChatStore((s) => s.isStreaming);
@@ -36,10 +45,18 @@ function MessageInput({ onSend }: MessageInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   useEffect(() => {
     textareaRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    if (fileError) {
+      const timer = setTimeout(() => setFileError(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [fileError]);
 
   const adjustHeight = useCallback(() => {
     const el = textareaRef.current;
@@ -49,17 +66,24 @@ function MessageInput({ onSend }: MessageInputProps) {
   }, []);
 
   const handleFiles = useCallback(async (fileList: FileList) => {
+    setFileError(null);
     const files: File[] = Array.from(fileList);
     for (const file of files) {
-      if (!ACCEPTED_MIME_TYPES.includes(file.type)) continue;
-      const data = await readFileAsBase64(file);
-      addPendingFile({
-        id: uuid(),
-        name: file.name,
-        mime_type: file.type,
-        data,
-        size: file.size,
-      });
+      if (isImageMime(file.type)) {
+        const data = await readFileAsBase64(file);
+        addPendingFile({
+          id: uuid(),
+          name: file.name,
+          mime_type: file.type,
+          data,
+          size: file.size,
+        });
+      } else if (isTextMime(file.type)) {
+        const text = await readFileAsText(file);
+        setInput((prev) => (prev ? `${prev}\n\n${text}` : text));
+      } else {
+        setFileError(`"${file.name}" is not supported. Only images and text files are accepted.`);
+      }
     }
   }, [addPendingFile]);
 
@@ -96,15 +120,23 @@ function MessageInput({ onSend }: MessageInputProps) {
     }
     if (files.length === 0) return;
     e.preventDefault();
+    setFileError(null);
     for (const file of files) {
-      const data = await readFileAsBase64(file);
-      addPendingFile({
-        id: uuid(),
-        name: file.name,
-        mime_type: file.type,
-        data,
-        size: file.size,
-      });
+      if (isImageMime(file.type)) {
+        const data = await readFileAsBase64(file);
+        addPendingFile({
+          id: uuid(),
+          name: file.name,
+          mime_type: file.type,
+          data,
+          size: file.size,
+        });
+      } else if (isTextMime(file.type)) {
+        const text = await readFileAsText(file);
+        setInput((prev) => (prev ? `${prev}\n\n${text}` : text));
+      } else {
+        setFileError(`"${file.name}" is not supported. Only images and text files are accepted.`);
+      }
     }
   }, [addPendingFile]);
 
@@ -145,6 +177,12 @@ function MessageInput({ onSend }: MessageInputProps) {
         {showWarning && (
           <div className="mb-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs">
             Selected model may not support file uploads. Switch to a multimodal model (Claude, GPT-4o, Gemini) for best results.
+          </div>
+        )}
+
+        {fileError && (
+          <div className="mb-2 px-3 py-2 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs animate-fade-up">
+            {fileError}
           </div>
         )}
 
