@@ -2,6 +2,7 @@ import { useCallback, useMemo } from "react";
 import { X } from "lucide-react";
 import { useChatStore } from "../../stores/chatStore";
 import { useSettingsStore } from "../../stores/settingsStore";
+import { useModelStore } from "../../stores/modelStore";
 import { useConversations } from "../../hooks/useConversations";
 import { useStreamingChat } from "../../hooks/useStreamingChat";
 import MessageList from "./MessageList";
@@ -48,17 +49,25 @@ function ChatView() {
     [currentConversationId, createConversation, sendMessage],
   );
 
+  const models = useModelStore((s) => s.models);
+
   const tokenStats = useMemo(() => {
+    const pricingMap = new Map(models.map((m) => [m.id, m]));
     let inputTokens = 0;
     let outputTokens = 0;
     let cost = 0;
     for (const m of messages) {
       inputTokens += m.input_tokens;
       outputTokens += m.output_tokens;
-      cost += m.cost;
+      if (m.model) {
+        const pricing = pricingMap.get(m.model);
+        if (pricing) {
+          cost += m.input_tokens * pricing.prompt_pricing + m.output_tokens * pricing.completion_pricing;
+        }
+      }
     }
     return { inputTokens, outputTokens, totalTokens: inputTokens + outputTokens, cost };
-  }, [messages]);
+  }, [messages, models]);
 
   if (!apiKey) {
     return (
@@ -94,12 +103,8 @@ function ChatView() {
             <span>{tokenStats.outputTokens.toLocaleString()} output</span>
             <span className="text-muted-foreground/20">·</span>
             <span>{tokenStats.totalTokens.toLocaleString()} total</span>
-            {tokenStats.cost > 0 && (
-              <>
-                <span className="text-muted-foreground/20">·</span>
-                <span>${tokenStats.cost < 0.01 ? tokenStats.cost.toFixed(4) : tokenStats.cost.toFixed(2)}</span>
-              </>
-            )}
+            <span className="text-muted-foreground/20">·</span>
+            <span>${tokenStats.cost < 0.01 ? tokenStats.cost.toFixed(4) : tokenStats.cost.toFixed(2)}</span>
           </div>
         </div>
       )}
