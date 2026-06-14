@@ -59,7 +59,9 @@ export function useStreamingChat() {
           assistantMessage: content,
         })
           .then(() => bumpTitleRefresh())
-          .catch(() => {});
+          .catch(() => bumpTitleRefresh());
+      } else {
+        bumpTitleRefresh();
       }
     });
 
@@ -97,7 +99,7 @@ export function useStreamingChat() {
 
       if (!hasSentFirstMessage.current) {
         hasSentFirstMessage.current = true;
-        firstUserMessage.current = content;
+        firstUserMessage.current = content || (files && files.length > 0 ? "[File attachment]" : "");
       }
 
       const assistantId = uuid();
