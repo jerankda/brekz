@@ -87,26 +87,20 @@ function ChatView() {
 
   return (
     <div className="flex-1 flex flex-col h-full">
+      {tokenStats.totalTokens > 0 && (
+        <div className="flex items-center justify-end gap-2 px-4 py-1 text-[10px] font-mono text-muted-foreground/35">
+          <span>{tokenStats.totalTokens.toLocaleString()} tokens</span>
+          <span>·</span>
+          <span>${tokenStats.cost < 0.01 ? tokenStats.cost.toFixed(4) : tokenStats.cost.toFixed(2)}</span>
+        </div>
+      )}
+
       {messages.length === 0 && !isStreaming ? (
         <EmptyState title="What can I help with?">
           Select a model and type your message.
         </EmptyState>
       ) : (
         <MessageList />
-      )}
-
-      {tokenStats.totalTokens > 0 && (
-        <div className="mx-auto max-w-[680px] w-full px-4 pb-1">
-          <div className="flex items-center justify-center gap-3 text-[11px] font-mono text-muted-foreground/40">
-            <span>{tokenStats.inputTokens.toLocaleString()} input</span>
-            <span className="text-muted-foreground/20">·</span>
-            <span>{tokenStats.outputTokens.toLocaleString()} output</span>
-            <span className="text-muted-foreground/20">·</span>
-            <span>{tokenStats.totalTokens.toLocaleString()} total</span>
-            <span className="text-muted-foreground/20">·</span>
-            <span>${tokenStats.cost < 0.01 ? tokenStats.cost.toFixed(4) : tokenStats.cost.toFixed(2)}</span>
-          </div>
-        </div>
       )}
 
       {error && (
