@@ -48,14 +48,6 @@ function ChatView() {
     [currentConversationId, createConversation, sendMessage],
   );
 
-  if (!apiKey) {
-    return (
-      <EmptyState title="Welcome to brekz.">
-        Add your OpenRouter API key in Settings to start chatting with any AI model.
-      </EmptyState>
-    );
-  }
-
   const tokenStats = useMemo(() => {
     let inputTokens = 0;
     let outputTokens = 0;
@@ -67,6 +59,14 @@ function ChatView() {
     }
     return { inputTokens, outputTokens, totalTokens: inputTokens + outputTokens, cost };
   }, [messages]);
+
+  if (!apiKey) {
+    return (
+      <EmptyState title="Welcome to brekz.">
+        Add your OpenRouter API key in Settings to start chatting with any AI model.
+      </EmptyState>
+    );
+  }
 
   if (!apiKeyValid) {
     return (
