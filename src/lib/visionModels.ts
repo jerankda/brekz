@@ -70,3 +70,7 @@ export function isImageMime(mimeType: string): boolean {
 export function isTextMime(mimeType: string): boolean {
   return TEXT_MIMES.includes(mimeType);
 }
+
+export function isPdfMime(mimeType: string): boolean {
+  return mimeType === PDF_MIME;
+}

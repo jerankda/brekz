@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import ModelSelector from "./ModelSelector";
 import { useChatStore } from "../../stores/chatStore";
 import { useSettingsStore } from "../../stores/settingsStore";
-import { isMultimodalModel, getFileTypeCategory, isImageMime, isTextMime, ACCEPTED_MIME_TYPES, ACCEPTED_FILE_EXTENSIONS } from "../../lib/visionModels";
+import { isMultimodalModel, getFileTypeCategory, isImageMime, isTextMime, isPdfMime, ACCEPTED_MIME_TYPES, ACCEPTED_FILE_EXTENSIONS } from "../../lib/visionModels";
 import type { FileAttachment } from "../../types/chat";
 
 interface MessageInputProps {
@@ -69,7 +69,7 @@ function MessageInput({ onSend }: MessageInputProps) {
     setFileError(null);
     const files: File[] = Array.from(fileList);
     for (const file of files) {
-      if (isImageMime(file.type)) {
+      if (isImageMime(file.type) || isPdfMime(file.type)) {
         const data = await readFileAsBase64(file);
         addPendingFile({
           id: uuid(),
@@ -82,7 +82,7 @@ function MessageInput({ onSend }: MessageInputProps) {
         const text = await readFileAsText(file);
         setInput((prev) => (prev ? `${prev}\n\n${text}` : text));
       } else {
-        setFileError(`"${file.name}" is not supported. Only images and text files are accepted.`);
+        setFileError(`"${file.name}" is not supported. Only images, PDFs, and text files are accepted.`);
       }
     }
   }, [addPendingFile]);
@@ -122,7 +122,7 @@ function MessageInput({ onSend }: MessageInputProps) {
     e.preventDefault();
     setFileError(null);
     for (const file of files) {
-      if (isImageMime(file.type)) {
+      if (isImageMime(file.type) || isPdfMime(file.type)) {
         const data = await readFileAsBase64(file);
         addPendingFile({
           id: uuid(),
@@ -135,7 +135,7 @@ function MessageInput({ onSend }: MessageInputProps) {
         const text = await readFileAsText(file);
         setInput((prev) => (prev ? `${prev}\n\n${text}` : text));
       } else {
-        setFileError(`"${file.name}" is not supported. Only images and text files are accepted.`);
+        setFileError(`"${file.name}" is not supported. Only images, PDFs, and text files are accepted.`);
       }
     }
   }, [addPendingFile]);
