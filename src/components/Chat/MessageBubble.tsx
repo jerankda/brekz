@@ -1,9 +1,27 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { FileText } from "lucide-react";
-import type { Message } from "../../types/chat";
+import type { Message, FileAttachment } from "../../types/chat";
 import { getFileTypeCategory } from "../../lib/visionModels";
 import { cn } from "@/lib/utils";
+
+function parseAttachments(raw: string): FileAttachment[] {
+  try {
+    const parsed = JSON.parse(raw || "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item: unknown): item is FileAttachment => {
+      if (!item || typeof item !== "object") return false;
+      const a = item as Record<string, unknown>;
+      return typeof a.id === "string"
+        && typeof a.name === "string"
+        && typeof a.mime_type === "string"
+        && typeof a.data === "string"
+        && typeof a.size === "number";
+    });
+  } catch {
+    return [];
+  }
+}
 
 interface MessageBubbleProps {
   message: Message
@@ -16,10 +34,7 @@ function MessageBubble({ message, isStreaming, streamingContent }: MessageBubble
   const content = isStreaming ? (streamingContent ?? "") : message.content;
   const isEmpty = !content && isStreaming;
 
-  let attachments: Array<{ id: string; name: string; mime_type: string; data: string; size: number }> = [];
-  try {
-    attachments = JSON.parse(message.attachments || "[]");
-  } catch {}
+  const attachments = parseAttachments(message.attachments);
 
   return (
     <div
