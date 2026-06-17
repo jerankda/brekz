@@ -70,8 +70,7 @@ export const useChatStore = create<ChatState>((set) => ({
   clearError: () => set({ error: null }),
 
   bumpTitleRefresh: () =>
-    set((s) => ({ titleRefreshVersion: s.titleRefreshVersion + 1 }),
-  ),
+    set((s) => ({ titleRefreshVersion: s.titleRefreshVersion + 1 })),
 
   addPendingFile: (file) =>
     set((s) => ({ pendingFiles: [...s.pendingFiles, file] })),
