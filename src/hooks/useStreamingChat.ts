@@ -5,7 +5,28 @@ import { v4 as uuid } from "uuid";
 import { useChatStore } from "../stores/chatStore";
 import { useSettingsStore } from "../stores/settingsStore";
 import { useConversations } from "./useConversations";
-import type { StreamChunkPayload, StreamDonePayload, FileAttachment } from "../types/chat";
+import type { StreamChunkPayload, StreamDonePayload, FileAttachment, Message } from "../types/chat";
+
+function messageToChatMessage(m: Message): { role: string; content: string | Record<string, unknown>[] } {
+  let files: FileAttachment[] = [];
+  try { files = JSON.parse(m.attachments || "[]"); } catch { /* ignore parse errors */ }
+
+  if (files.length === 0) {
+    return { role: m.role, content: m.content };
+  }
+
+  const parts: Record<string, unknown>[] = [];
+  if (m.content) {
+    parts.push({ type: "text", text: m.content });
+  }
+  for (const f of files) {
+    parts.push({
+      type: "image_url",
+      image_url: { url: `data:${f.mime_type};base64,${f.data}` },
+    });
+  }
+  return { role: m.role, content: parts };
+}
 
 export function useStreamingChat() {
   const {
@@ -106,12 +127,9 @@ export function useStreamingChat() {
       startStreaming(assistantId);
 
       const store = useChatStore.getState();
-      const chatMessages: { role: string; content: string }[] = [];
+      const chatMessages = store.messages.map(messageToChatMessage);
       if (defaultSystemPrompt) {
-        chatMessages.push({ role: "system", content: defaultSystemPrompt });
-      }
-      for (const m of store.messages) {
-        chatMessages.push({ role: m.role, content: m.content });
+        chatMessages.unshift({ role: "system", content: defaultSystemPrompt });
       }
 
       try {
@@ -124,7 +142,7 @@ export function useStreamingChat() {
             temperature: defaultTemperature,
             max_tokens: defaultMaxTokens,
           },
-          files: files && files.length > 0 ? files : null,
+          files: null,
         });
       } catch (e) {
         setChatError(String(e));
