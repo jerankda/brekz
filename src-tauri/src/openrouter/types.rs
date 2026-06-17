@@ -178,17 +178,6 @@ pub struct Message {
     pub attachments: String,
 }
 
-impl Message {
-    pub fn to_chat_message(&self) -> ChatMessage {
-        if self.attachments.is_empty() || self.attachments == "[]" {
-            return ChatMessage::plain(&self.role, &self.content);
-        }
-        let files: Vec<FileAttachment> = serde_json::from_str(&self.attachments).unwrap_or_default();
-        let parts: Vec<ContentPart> = files.iter().map(ContentPart::from_attachment).collect();
-        ChatMessage::with_parts(&self.role, &self.content, parts)
-    }
-}
-
 // ── Frontend-facing streaming event payloads ──
 
 #[derive(Debug, Clone, Serialize)]
