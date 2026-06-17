@@ -115,13 +115,6 @@ pub struct ChatMessage {
 }
 
 impl ChatMessage {
-    pub fn plain(role: &str, content: &str) -> Self {
-        ChatMessage {
-            role: role.to_string(),
-            content: Some(serde_json::Value::String(content.to_string())),
-        }
-    }
-
     pub fn with_parts(role: &str, text: &str, parts: Vec<ContentPart>) -> Self {
         let mut all_parts = Vec::new();
         if !text.is_empty() {
