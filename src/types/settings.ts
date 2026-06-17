@@ -5,6 +5,5 @@ export interface AppSettings {
   defaultTemperature: number
   defaultMaxTokens: number
   defaultSystemPrompt: string
-  darkMode: boolean
   favoriteModels: string[]
 }

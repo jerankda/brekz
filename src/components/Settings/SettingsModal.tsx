@@ -13,38 +13,13 @@ import {
 import { Button } from "@/components/ui/button";
 import ApiKeySection from "./ApiKeySection";
 import ModelDefaults from "./ModelDefaults";
-import { Moon, Monitor, Trash2, AlertTriangle } from "lucide-react";
+import { Trash2, AlertTriangle } from "lucide-react";
 
 const tabs = [
   { id: "general", label: "General" },
-  { id: "appearance", label: "Appearance" },
   { id: "models", label: "Models" },
   { id: "data", label: "Data" },
 ] as const;
-
-function AppearanceSection() {
-  return (
-    <div className="space-y-4">
-      <p className="text-muted-foreground text-sm">Theme</p>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="flex flex-col items-center gap-3 p-5 rounded-xl border-2 border-primary/30 bg-accent cursor-default">
-          <Moon size={22} className="text-primary" />
-          <div className="text-center">
-            <p className="text-[14px] font-medium text-foreground">Dark</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Currently active</p>
-          </div>
-        </div>
-        <div className="flex flex-col items-center gap-3 p-5 rounded-xl border border-border bg-card cursor-not-allowed opacity-40">
-          <Monitor size={22} className="text-muted-foreground" />
-          <div className="text-center">
-            <p className="text-[14px] font-medium text-muted-foreground">Light</p>
-            <p className="text-[11px] text-muted-foreground/60 mt-0.5">Coming soon</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function DataSection() {
   const [confirming, setConfirming] = useState(false);
@@ -174,7 +149,6 @@ function SettingsModal() {
 
         <div className="px-6 pb-6 pt-4">
           {settingsTab === "general" && <ApiKeySection />}
-          {settingsTab === "appearance" && <AppearanceSection />}
           {settingsTab === "models" && <ModelDefaults />}
           {settingsTab === "data" && <DataSection />}
         </div>

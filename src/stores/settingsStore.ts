@@ -15,7 +15,6 @@ interface SettingsState extends AppSettings {
   setDefaultTemperature: (temp: number) => Promise<void>
   setDefaultMaxTokens: (tokens: number) => Promise<void>
   setDefaultSystemPrompt: (prompt: string) => Promise<void>
-  setDarkMode: (dark: boolean) => Promise<void>
   toggleFavoriteModel: (modelId: string) => Promise<void>
 }
 
@@ -35,7 +34,6 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   defaultTemperature: 0.7,
   defaultMaxTokens: 4096,
   defaultSystemPrompt: "",
-  darkMode: false,
   favoriteModels: [],
   loaded: false,
 
@@ -46,7 +44,6 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     const defaultTemperature = await store.get<number>("defaultTemperature");
     const defaultMaxTokens = await store.get<number>("defaultMaxTokens");
     const defaultSystemPrompt = await store.get<string>("defaultSystemPrompt");
-    const darkMode = await store.get<boolean>("darkMode");
     const favoriteModels = await store.get<string[]>("favoriteModels");
 
     set({
@@ -55,7 +52,6 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       defaultTemperature: defaultTemperature ?? 0.7,
       defaultMaxTokens: defaultMaxTokens ?? 4096,
       defaultSystemPrompt: defaultSystemPrompt ?? "",
-      darkMode: darkMode ?? false,
       favoriteModels: favoriteModels ?? [],
       loaded: true,
     });
@@ -118,13 +114,6 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     await store.set("defaultSystemPrompt", prompt);
     await store.save();
     set({ defaultSystemPrompt: prompt });
-  },
-
-  setDarkMode: async (dark) => {
-    const store = await getStore();
-    await store.set("darkMode", dark);
-    await store.save();
-    set({ darkMode: dark });
   },
 
   toggleFavoriteModel: async (modelId) => {
