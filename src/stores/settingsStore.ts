@@ -83,7 +83,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       await store.delete("apiKey");
     }
     await store.save();
-    set((s) => ({ apiKey: key, apiKeyValid: key === s.apiKey ? s.apiKeyValid : false }));
+    set({ apiKey: key, apiKeyValid: false });
   },
 
   setApiKeyValid: (valid) => set({ apiKeyValid: valid }),
