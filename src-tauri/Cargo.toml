@@ -1,6 +1,6 @@
 [package]
 name = "brekz"
-version = "0.3.0"
+version = "0.4.0"
 description = "Brekz Desktop App"
 authors = ["you"]
 edition = "2021"
